@@ -1,6 +1,11 @@
 type Link = string;
 type Base64 = string;
 
+export type InstagramSession = {
+  id: string;
+  timestamp: number
+}
+
 interface ITagUser {
   node: {
     user: {
@@ -88,7 +93,7 @@ type IRowInstagramPost = {
   product_type: ProductType;
 };
 
-type IInstagramPost = Omit<
+export type InstagramPost = Omit<
   IRowInstagramPost,
   | '__typename'
   | 'id'
