@@ -1,30 +1,30 @@
 import {Injectable, Logger} from "@nestjs/common";
 import {ConfigService} from "@nestjs/config";
-import {HttpService} from "@nestjs/axios";
 import {igApi, getCookie} from "insta-fetcher";
 import {InstagramDBService} from "./instagram-db.service";
+import {InstagramPost} from "../types/instagram";
+import {IPaginatedPosts} from "insta-fetcher/dist/types/PaginatedPosts";
+import {Typename} from "insta-fetcher/dist/types";
 
 @Injectable()
 export class InstagramApiService {
+  private readonly logger = new Logger(InstagramApiService.name);
+  private ig: igApi;
+
   constructor(
     private readonly configService: ConfigService,
-    private readonly httpService: HttpService,
     private readonly instagramDBService: InstagramDBService
   ) {}
 
-  private readonly logger = new Logger(InstagramApiService.name);
-  private ig;
-
   async connect() {
     const sessionId = await this.getSessionId();
-    this.logger.debug(sessionId)
-    this.ig = new igApi(sessionId.id, false);
-    this.logger.debug(this.ig)
-
-    if (false) {
-      return;
+    if (sessionId) {
+      this.ig = new igApi(sessionId.id, false);
+      this.logger.debug('connect')
+      this.logger.debug(this.ig)
     } else {
       await this.saveNewSessionId();
+      await this.connect();
     }
   }
 
@@ -38,18 +38,48 @@ export class InstagramApiService {
     const newSessionId = await getCookie(instagramLogin, instagramPassword);
     const timestamp = Date.now();
 
-    await this.instagramDBService.create({ id: newSessionId as string, timestamp})
+    await this.instagramDBService.setSessionId({ id: newSessionId as string, timestamp})
   }
-
 
   async getPosts() {
     await this.connect();
 
-    const posts = await this.ig.fetchUserPostsV2('rihannaofficiall');
-    this.logger.debug(posts);
+    if (this.ig) {
+      // await this.instagramDBService.removeAllPosts();
+      const response = await this.ig.fetchUserPostsV2('rihannaofficiall');
 
-      // const oldPosts = postsStore.get('posts.rihanna');
-      // const newPosts = updatePosts(oldPosts, res.edges);
-      // postsStore.put('posts.rihanna', newPosts);
+      this.savePosts(response)
+    }
+  }
+
+  proceedPosts(paginatedPosts: IPaginatedPosts ): InstagramPost[] {
+    return paginatedPosts.edges.map(({ node: post }) => {
+      return {
+        id: post.id,
+        __typename: post.__typename,
+        is_video: post.is_video,
+        video_url: post.video_url,
+        display_url: post.display_url,
+        taken_at_timestamp: post.taken_at_timestamp,
+        product_type: post.product_type,
+        ...post?.edge_media_to_caption?.edges[0]?.node?.text && {
+          caption: post.edge_media_to_caption.edges[0].node.text},
+        ...post.edge_sidecar_to_children && {
+          media: post.edge_sidecar_to_children.edges.map(({node}) => node.display_url)
+        }
+      }
+    })
+  }
+
+  async savePosts(posts: IPaginatedPosts) {
+    try {
+      const updatedPosts = this.proceedPosts(posts);
+      const response = await this.instagramDBService.setPosts(updatedPosts)
+      if (!response.success) {
+        this.logger.error('Post was not saved');
+      }
+    } catch (error) {
+      this.logger.error(error);
+    }
   }
 }

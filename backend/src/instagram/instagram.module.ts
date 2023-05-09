@@ -7,12 +7,16 @@ import {InstagramSession, InstagramSessionSchema} from "./instagram-session.sche
 import {ConfigModule} from "@nestjs/config";
 import {ScheduleModule} from "@nestjs/schedule";
 import {HttpModule} from "@nestjs/axios";
+import {InstagramPost, InstagramPostSchema} from "./instagram-post.schema";
 
 @Module({
   imports: [
     MongooseModule.forFeature([{
       name: InstagramSession.name,
       schema: InstagramSessionSchema
+    }, {
+      name: InstagramPost.name,
+      schema: InstagramPostSchema
     }]),
     ConfigModule.forRoot(),
     ScheduleModule.forRoot(),

@@ -1,6 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import {InstagramApiService} from "./instagram/instagram-api.service";
 
 @Controller()
 export class AppController {

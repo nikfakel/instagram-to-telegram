@@ -1,7 +1,18 @@
-import {Controller} from "@nestjs/common";
+import {Controller, Logger} from "@nestjs/common";
+import {InstagramApiService} from "./instagram-api.service";
 
 @Controller()
 export class InstagramController {
-  constructor() {
+  private readonly logger = new Logger(InstagramApiService.name);
+
+  constructor(
+    private readonly instagramApiService: InstagramApiService
+  ) {
+    this.logger.debug('get posts');
+    this.getPosts();
+  }
+
+  async getPosts() {
+    this.instagramApiService.getPosts();
   }
 }

@@ -21,7 +21,7 @@ export class TelegramSendMessagesService {
       // this.sendPost();
     }
 
-    this.logger.debug('sent');
+    this.logger.debug(newPost);
   }
 
   sendPost() {
