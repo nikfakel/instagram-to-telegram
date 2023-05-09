@@ -4,7 +4,7 @@ export enum TelegramMethod {
   SendVideo = 'sendVideo',
 }
 
-type TelegramSuccessResponse = {
+export type TelegramSuccessResponse = {
   ok: boolean;
   result: {
     message_id: number;
