@@ -29,9 +29,8 @@ export class TelegramApiService {
 
       if (response.data.ok) {
         console.log('SUCCESS');
+        return await response;
       }
-
-      return await response;
     } catch (error) {
       console.log(error);
     }
