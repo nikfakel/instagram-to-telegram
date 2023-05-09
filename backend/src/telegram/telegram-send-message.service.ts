@@ -1,13 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
-import { TelegramApiService } from '../telegram-api/telegram-api.service';
-import { TelegramMethod } from '../types/telegram';
+import {Injectable, Logger} from "@nestjs/common";
+import {TelegramApiService} from "./telegram-api.service";
+import {Cron} from "@nestjs/schedule";
+import {TelegramMethod} from "../types/telegram";
 
 @Injectable()
-export class SendPost {
+export class TelegramSendMessagesService {
   constructor(private readonly telegramApiService: TelegramApiService) {}
 
-  private readonly logger = new Logger(SendPost.name);
+  private readonly logger = new Logger(TelegramSendMessagesService.name);
 
   getPost() {
     return false;

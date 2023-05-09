@@ -4,7 +4,7 @@ import { HydratedDocument } from 'mongoose';
 export type SessionDocument = HydratedDocument<InstagramSession>;
 
 @Schema({ collection: 'instagramSessions'})
-export class InstagramSession extends Document {
+export class InstagramSession {
   @Prop()
   id: string;
 

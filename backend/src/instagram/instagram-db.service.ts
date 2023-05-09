@@ -2,7 +2,7 @@ import {Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {InstagramSession} from "./instagram-session.schema";
 import {Model} from "mongoose";
-import {CreateInstagramSessionDto} from "./create-session.dto";
+import {CreateInstagramSessionDto} from "./create-instagram-session.dto";
 
 @Injectable()
 export class InstagramDBService {
