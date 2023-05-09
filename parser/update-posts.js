@@ -1,0 +1,3 @@
+const updatePost = (oldPosts, newPosts) => {
+
+}
