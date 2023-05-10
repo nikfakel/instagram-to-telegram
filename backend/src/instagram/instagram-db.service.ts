@@ -4,6 +4,7 @@ import {InstagramSession} from "./instagram-session.schema";
 import {Model} from "mongoose";
 import {CreateInstagramSessionDto} from "./create-instagram-session.dto";
 import {InstagramPost} from "./instagram-post.schema";
+import {InstagramPost as InstagramPostType} from "../types/instagram";
 
 @Injectable()
 export class InstagramDBService {
@@ -29,12 +30,10 @@ export class InstagramDBService {
     await this.instagramPostModel.deleteMany();
   }
 
-  async setPosts(posts: InstagramPost[]): Promise<{ success: boolean }> {
+  async setPosts(posts: InstagramPostType[]): Promise<{ success: boolean }> {
     try {
       const oldPosts = await this.instagramPostModel.find();
       const postsToAdd = posts.filter(newPost => !oldPosts.some(oldPost => oldPost.id === newPost.id))
-
-      // this.logger.debug(postsToAdd);
 
       if (postsToAdd) {
         await this.instagramPostModel.insertMany(postsToAdd);
@@ -45,6 +44,10 @@ export class InstagramDBService {
       };
     } catch (error) {
       this.logger.error(error);
+
+      return {
+        success: false
+      }
     }
   }
 }

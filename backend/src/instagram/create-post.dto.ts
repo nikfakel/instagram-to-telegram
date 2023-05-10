@@ -7,4 +7,6 @@ export class CreatePostDTO {
   readonly product_type: string;
   readonly caption: string;
   readonly media: string[];
+  posted: boolean;
+  postedDate?: number;
 }

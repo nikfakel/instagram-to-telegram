@@ -2,35 +2,70 @@ import {Injectable, Logger} from "@nestjs/common";
 import {TelegramApiService} from "./telegram-api.service";
 import {Cron} from "@nestjs/schedule";
 import {TelegramMethod} from "../types/telegram";
+import {InjectModel} from "@nestjs/mongoose";
+import {InstagramPost} from "../instagram/instagram-post.schema";
+import {Model} from "mongoose";
 
 @Injectable()
 export class TelegramSendMessagesService {
-  constructor(private readonly telegramApiService: TelegramApiService) {}
+  constructor(
+    private readonly telegramApiService: TelegramApiService,
+    @InjectModel(InstagramPost.name) private readonly instagramPostModel: Model<InstagramPost>,
+    ) {}
 
   private readonly logger = new Logger(TelegramSendMessagesService.name);
 
-  getPost() {
-    return false;
+  async getPost() {
+    try {
+      const resp = await this.instagramPostModel.aggregate<InstagramPost>([
+        {$match: { posted: false }},
+        {$unwind: '$taken_at_timestamp'},
+        {$sort: {'taken_at_timestamp': 1}},
+        {$limit: 1},
+      ])
+
+      return resp && resp[0] || false;
+    } catch (error) {
+      this.logger.error(error)
+      return false
+    }
   }
 
-  @Cron('*/20 * * * * *')
-  handleCron() {
-    const newPost = this.getPost()
+  // @Cron('*/20 * * * * *')
+  async handleCron() {
+    const newPost = await this.getPost()
 
     if (newPost) {
-      // this.sendPost();
+      this.sendPost(newPost);
     }
 
     this.logger.debug(newPost);
   }
 
-  sendPost() {
+  sendPost(post: InstagramPost) {
+    let data: {
+      media?: string[];
+      photo?: string;
+      video?: string;
+    } = {};
+    let header = undefined;
+
+    if (post.media && post.media.length > 0) {
+      header = TelegramMethod.SendMediaGroup;
+      data.media = [post.display_url, ...post.media]
+    } else if (post.is_video) {
+      header = TelegramMethod.SendVideo
+      data.video = post.video_url
+    } else {
+      header = TelegramMethod.SendPhoto
+      data.photo = post.display_url
+    }
+
     try {
-      this.telegramApiService.sendRequest(TelegramMethod.SendPhoto, {
+      this.telegramApiService.sendRequest(header, {
         chat_id: '@rihanna_instagram',
-        photo:
-          'https://instagram.feoh8-1.fna.fbcdn.net/v/t51.2885-15/340839509_536936658622767_3545526465501447426_n.jpg?stp=dst-jpg_e15&_nc_ht=instagram.feoh8-1.fna.fbcdn.net&_nc_cat=103&_nc_ohc=JCqmHhT7iK4AX_IpPqx&edm=APU89FABAAAA&ccb=7-5&oh=00_AfAzGv_i6Ka2nqneDuy0wZMMBQmYIvu0E9jqbroa2zuNRw&oe=645B6316&_nc_sid=86f79a',
-        caption: 'caption',
+        caption: post.caption,
+        ...data,
       });
     } catch (error) {
       this.logger.error(error)

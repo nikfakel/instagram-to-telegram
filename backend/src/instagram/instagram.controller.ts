@@ -8,8 +8,7 @@ export class InstagramController {
   constructor(
     private readonly instagramApiService: InstagramApiService
   ) {
-    this.logger.debug('get posts');
-    this.getPosts();
+    // this.getPosts();
   }
 
   async getPosts() {

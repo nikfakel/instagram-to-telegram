@@ -18,6 +18,7 @@ export class TelegramApiService {
     data,
   ): Promise<AxiosResponse<TelegramSuccessResponse>> {
     try {
+      console.log(data);
       const response = await this.httpService.axiosRef.post(
         `https://api.telegram.org/bot${this.configService.get(
           'TELEGRAM_TOKEN',
@@ -28,11 +29,11 @@ export class TelegramApiService {
       this.logger.debug(response.data);
 
       if (response.data.ok) {
-        console.log('SUCCESS');
+        console.log('SUCCESSS');
         return await response;
       }
     } catch (error) {
-      console.log(error);
+      console.log(error.response.data.description);
     }
   }
 }

@@ -32,6 +32,12 @@ export class InstagramPost {
 
   @Prop()
   media?: string[];
+
+  @Prop()
+  posted: boolean;
+
+  @Prop()
+  postedDate?: number;
 }
 
 export const InstagramPostSchema = SchemaFactory.createForClass(InstagramPost);

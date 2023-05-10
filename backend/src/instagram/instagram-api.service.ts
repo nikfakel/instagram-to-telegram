@@ -47,8 +47,8 @@ export class InstagramApiService {
     if (this.ig) {
       // await this.instagramDBService.removeAllPosts();
       const response = await this.ig.fetchUserPostsV2('rihannaofficiall');
-
       this.savePosts(response)
+      this.logger.debug('POSTS WERE UPDATED')
     }
   }
 
@@ -62,11 +62,11 @@ export class InstagramApiService {
         display_url: post.display_url,
         taken_at_timestamp: post.taken_at_timestamp,
         product_type: post.product_type,
+        posted: false,
         ...post?.edge_media_to_caption?.edges[0]?.node?.text && {
           caption: post.edge_media_to_caption.edges[0].node.text},
         ...post.edge_sidecar_to_children && {
-          media: post.edge_sidecar_to_children.edges.map(({node}) => node.display_url)
-        }
+          media: post.edge_sidecar_to_children.edges.map(({node}) => node.display_url)},
       }
     })
   }

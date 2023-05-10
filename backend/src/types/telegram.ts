@@ -2,6 +2,7 @@ export enum TelegramMethod {
   SendPhoto = 'sendPhoto',
   SendMessage = 'sendMessage',
   SendVideo = 'sendVideo',
+  SendMediaGroup = 'sendMediaGroup',
 }
 
 export type TelegramSuccessResponse = {
