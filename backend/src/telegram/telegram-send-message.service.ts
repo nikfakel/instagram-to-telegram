@@ -16,6 +16,7 @@ export class TelegramSendMessagesService {
   private readonly logger = new Logger(TelegramSendMessagesService.name);
 
   async getPost() {
+    console.log('sdss');
     try {
       const resp = await this.instagramPostModel.aggregate<InstagramPost>([
         {$match: { posted: false }},
@@ -38,37 +39,58 @@ export class TelegramSendMessagesService {
     if (newPost) {
       this.sendPost(newPost);
     }
-
-    this.logger.debug(newPost);
   }
 
-  sendPost(post: InstagramPost) {
+  async sendPost(post: InstagramPost) {
     let data: {
-      media?: string[];
+      media?: string;
       photo?: string;
       video?: string;
     } = {};
     let header = undefined;
+    let media = [];
 
-    if (post.media && post.media.length > 0) {
-      header = TelegramMethod.SendMediaGroup;
-      data.media = [post.display_url, ...post.media]
-    } else if (post.is_video) {
-      header = TelegramMethod.SendVideo
-      data.video = post.video_url
+    if (post.media.length === 0) {
+      if (post.is_video) {
+        header = TelegramMethod.SendVideo
+        data.video = post.video_url
+      } else {
+        header = TelegramMethod.SendPhoto
+        data.photo = post.display_url
+      }
     } else {
-      header = TelegramMethod.SendPhoto
-      data.photo = post.display_url
+      header = TelegramMethod.SendMediaGroup;
+
+      if (post.is_video) {
+        media = [{ type: 'photo', media: post.video_url}, ...post.media.map(item => ({ type: 'photo', media: item }))];
+      } else {
+        media = post.media.map(item => ({ type: 'photo', media: item }))
+      }
+
+      data.media = JSON.stringify(media)
     }
 
     try {
-      this.telegramApiService.sendRequest(header, {
+      const response = await this.telegramApiService.sendRequest(header, {
         chat_id: '@rihanna_instagram',
         caption: post.caption,
         ...data,
       });
+
+      if (response.data.ok) {
+        this.setPosted(post.id)
+      }
     } catch (error) {
       this.logger.error(error)
+    }
+  }
+
+  async setPosted(id) {
+    try {
+      const post = await this.instagramPostModel.updateOne({ id },
+        { posted: true, postedDate: Date.now()});
+    } catch(error) {
+      this.logger.error(error);
     }
   }
 }

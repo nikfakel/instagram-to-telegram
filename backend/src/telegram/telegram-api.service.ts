@@ -18,20 +18,13 @@ export class TelegramApiService {
     data,
   ): Promise<AxiosResponse<TelegramSuccessResponse>> {
     try {
-      console.log(data);
       const response = await this.httpService.axiosRef.post(
         `https://api.telegram.org/bot${this.configService.get(
           'TELEGRAM_TOKEN',
         )}/${method}`,
         data,
       );
-
-      this.logger.debug(response.data);
-
-      if (response.data.ok) {
-        console.log('SUCCESSS');
-        return await response;
-      }
+      return await response;
     } catch (error) {
       console.log(error.response.data.description);
     }
