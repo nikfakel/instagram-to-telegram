@@ -20,6 +20,7 @@ export class FirebaseService {
   }
 
   getFireStore() {
+    this.logger.debug(this.configService.get('PROJECT_ID'));
     if (!this.app && !firebaseAdmin.apps.length) {
       try {
         const serviceAccount = {
