@@ -1,7 +1,6 @@
 import {Injectable, Logger} from '@nestjs/common';
 import * as firebaseAdmin from 'firebase-admin';
 import {InstagramPost, InstagramSession} from "../types/instagram";
-import {ConfigService} from "@nestjs/config";
 
 @Injectable()
 export class FirebaseService {
@@ -9,9 +8,7 @@ export class FirebaseService {
   private app: ReturnType<typeof firebaseAdmin.initializeApp>
   private readonly logger = new Logger(FirebaseService.name);
 
-  constructor(
-    private readonly configService: ConfigService
-  ) {
+  constructor() {
     this.initialize();
   }
 

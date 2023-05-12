@@ -1,5 +1,4 @@
 import {Injectable, Logger} from "@nestjs/common";
-import {ConfigService} from "@nestjs/config";
 import {igApi, getCookie} from "insta-fetcher";
 import {InstagramDBService} from "./instagram-db.service";
 import {InstagramPost} from "../types/instagram";
@@ -11,7 +10,6 @@ export class InstagramApiService {
   private ig: igApi;
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly instagramDBService: InstagramDBService
   ) {}
 
@@ -33,8 +31,8 @@ export class InstagramApiService {
   }
 
   async setSessionId() {
-    const instagramLogin = this.configService.get('INSTAGRAM_LOGIN');
-    const instagramPassword = this.configService.get('INSTAGRAM_PASSWORD');
+    const instagramLogin = process.env.INSTAGRAM_LOGIN;
+    const instagramPassword = process.env.INSTAGRAM_PASSWORD;
     const newSessionId = await getCookie(instagramLogin, instagramPassword);
     const timestamp = Date.now();
 
