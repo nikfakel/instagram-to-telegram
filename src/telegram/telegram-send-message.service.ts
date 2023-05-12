@@ -1,6 +1,5 @@
 import {Injectable, Logger} from "@nestjs/common";
 import {TelegramApiService} from "./telegram-api.service";
-import {Cron} from "@nestjs/schedule";
 import {TelegramMethod} from "../types/telegram";
 import {FirebaseService} from "../services/firebase.service";
 import {InstagramPost} from "../types/instagram";
@@ -15,10 +14,19 @@ export class TelegramSendMessagesService {
     ) {}
 
   async handleCron() {
-    const newPost = await this.getPost()
+    try {
+      const newPost = await this.getPost()
 
-    if (newPost) {
-      this.sendPost(newPost);
+      if (newPost) {
+        this.sendPost(newPost);
+
+        return newPost
+      } else {
+        return 'Error'
+      }
+    } catch(e) {
+      this.logger.error(e);
+      return e;
     }
   }
 
@@ -39,7 +47,7 @@ export class TelegramSendMessagesService {
     let header = undefined;
     let media = [];
 
-    if (post.media.length === 0) {
+    if (post.media && post.media.length === 0) {
       if (post.is_video) {
         header = TelegramMethod.SendVideo
         data.video = post.video_url
@@ -53,6 +61,7 @@ export class TelegramSendMessagesService {
       if (post.is_video) {
         media = [{ type: 'photo', media: post.video_url}, ...post.media.map(item => ({ type: 'photo', media: item }))];
       } else {
+        console.log(post);
         media = post.media.map(item => ({ type: 'photo', media: item }))
       }
 

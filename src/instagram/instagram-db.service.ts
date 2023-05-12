@@ -26,13 +26,17 @@ export class InstagramDBService {
     }
   }
 
-  async removeAllPosts() {
-    // await this.instagramPostModel.deleteMany();
-  }
-
   async setPosts(posts: InstagramPostType[]) {
     try {
       this.firebaseService.saveInstagramPosts(posts);
+    } catch(e) {
+      this.logger.error(e)
+    }
+  }
+
+  async removePosts() {
+    try {
+      this.firebaseService.removePosts();
     } catch(e) {
       this.logger.error(e)
     }

@@ -15,14 +15,28 @@ export class InstagramController {
   @Cron('* */29 * * * *')
   async getPosts() {
     try {
-      this.instagramApiService.getPosts();
+      const response = await this.instagramApiService.getPosts();
+      console.log(response);
+      return response;
     } catch(e) {
       this.logger.error(e)
+      return e;
     }
   }
 
   @Get('get-posts')
   async getPostsManual() {
     this.getPosts();
+  }
+
+  @Get('remove-posts')
+  async removePosts() {
+    try {
+      this.instagramApiService.removePosts();
+
+      return 'Posts removed'
+    } catch(e) {
+      this.logger.error(e)
+    }
   }
 }

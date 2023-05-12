@@ -84,12 +84,11 @@ export class FirebaseService {
         .limit(1)
         .get();
 
-      console.log('post');
       if (snapshot.empty) {
         this.logger.debug('No matching document');
-        return;
+        return false;
       } else {
-        return Object.values(snapshot)[0] as InstagramPost;
+        return snapshot.docs.map((item) => item.data())[0] as InstagramPost;
       }
     } catch(e) {
       this.logger.error(e);
@@ -102,6 +101,18 @@ export class FirebaseService {
         .update({posted: true, postedTimestamp, linkToTelegramMessage});
     } catch(e) {
       this.logger.error(e);
+    }
+  }
+
+  async removePosts() {
+    try {
+      await this.db.collection('posts').listDocuments().then(val => {
+        val.map((val) => {
+          val.delete()
+        })
+      })
+    } catch(e) {
+      this.logger.error(e)
     }
   }
 }

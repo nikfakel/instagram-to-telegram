@@ -13,7 +13,7 @@ export class TelegramController {
     this.telegramSendMessageService.handleCron();
   }
 
-  @Get('send post')
+  @Get('send-post')
   async sendPostManual() {
     this.sendPost();
   }

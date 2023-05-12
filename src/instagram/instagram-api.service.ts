@@ -18,8 +18,6 @@ export class InstagramApiService {
 
     if (sessionId) {
       this.ig = new igApi(sessionId.id, false);
-      this.logger.debug('connect')
-      this.logger.debug(this.ig)
     } else {
       await this.setSessionId();
       await this.connect();
@@ -44,7 +42,7 @@ export class InstagramApiService {
 
     if (this.ig) {
       const response = await this.ig.fetchUserPostsV2('memellin02');
-      this.savePosts(response)
+      return this.savePosts(response)
     }
   }
 
@@ -59,10 +57,11 @@ export class InstagramApiService {
         taken_at_timestamp: post.taken_at_timestamp,
         product_type: post.product_type,
         posted: false,
+        media: post.edge_sidecar_to_children
+          ? post.edge_sidecar_to_children.edges.map(({node}) => node.display_url)
+          : [],
         ...post?.edge_media_to_caption?.edges[0]?.node?.text && {
           caption: post.edge_media_to_caption.edges[0].node.text},
-        ...post.edge_sidecar_to_children && {
-          media: post.edge_sidecar_to_children.edges.map(({node}) => node.display_url)},
       }
     })
   }
@@ -70,10 +69,20 @@ export class InstagramApiService {
   async savePosts(posts: IPaginatedPosts) {
     try {
       const updatedPosts = this.proceedPosts(posts);
+      console.log(updatedPosts);
       const response = await this.instagramDBService.setPosts(updatedPosts)
       this.logger.debug('POSTS WERE UPDATED')
+      return updatedPosts;
     } catch (error) {
       this.logger.error(error);
+    }
+  }
+
+  async removePosts() {
+    try {
+      this.instagramDBService.removePosts()
+    } catch(e) {
+      this.logger.error(e)
     }
   }
 }
