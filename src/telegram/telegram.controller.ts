@@ -8,7 +8,7 @@ export class TelegramController {
     // this.telegramSendMessageService.handleCron();
   }
 
-  @Cron('* */30 * * * *')
+  // @Cron('* */30 * * * *')
   async sendPost() {
     this.telegramSendMessageService.handleCron();
   }

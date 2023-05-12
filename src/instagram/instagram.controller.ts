@@ -12,7 +12,7 @@ export class InstagramController {
     // this.getPosts();
   }
 
-  @Cron('* */29 * * * *')
+  // @Cron('* */29 * * * *')
   async getPosts() {
     try {
       const response = await this.instagramApiService.getPosts();
