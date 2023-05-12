@@ -20,13 +20,17 @@ export class FirebaseService {
   }
 
   getFireStore() {
+    this.logger.debug('PROCESSENV');
     this.logger.debug(this.configService.get('PROJECT_ID'));
+    this.logger.debug(process.env);
+    this.logger.debug(process.env.PROJECT_ID);
+
     if (!this.app && !firebaseAdmin.apps.length) {
       try {
         const serviceAccount = {
-          projectId: this.configService.get('PROJECT_ID'),
-          privateKey: this.configService.get('PRIVATE_KEY').replace(/\\n/g, '\n'),
-          clientEmail: this.configService.get('CLIENT_EMAIL'),
+          projectId: process.env.PROJECT_ID,
+          privateKey: process.env.PRIVATE_KEY.replace(/\\n/g, '\n'),
+          clientEmail: process.env.CLIENT_EMAIL,
         }
         this.app = firebaseAdmin.initializeApp({
           credential: firebaseAdmin.credential.cert(serviceAccount),
