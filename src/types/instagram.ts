@@ -1,15 +1,25 @@
-import {IPaginatedPosts} from "insta-fetcher/dist/types/PaginatedPosts";
-import {PurpleNode, Typename} from "insta-fetcher/dist/types";
-
-type Link = string;
-type Base64 = string;
+import {PurpleNode} from "insta-fetcher/dist/types";
 
 export type InstagramPost = Pick<
   PurpleNode,
   '__typename'
   | 'id'
   | 'is_video'
+  | 'display_url'
   | 'video_url'
   | 'taken_at_timestamp'
   | 'product_type'
->;
+> & {
+  media?: string[]; // from edge_sidecar_to_children
+  caption?: string; // from edge_media_to_caption
+  posted: boolean;
+  postedTimestamp?: number;
+  linkToTelegramMessage?: string;
+  linkToTelegramChat?: string;
+}
+
+export type InstagramSession = {
+  id: string;
+  timestamp: number;
+}
+

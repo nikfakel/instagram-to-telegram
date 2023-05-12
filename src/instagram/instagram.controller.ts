@@ -6,7 +6,7 @@ export class InstagramController {
   private readonly logger = new Logger(InstagramApiService.name);
 
   constructor(
-    private readonly instagramApiService: InstagramApiService
+    private readonly instagramApiService: InstagramApiService,
   ) {
     // this.getPosts();
   }

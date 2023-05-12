@@ -2,33 +2,23 @@ import {Injectable, Logger} from "@nestjs/common";
 import {TelegramApiService} from "./telegram-api.service";
 import {Cron} from "@nestjs/schedule";
 import {TelegramMethod} from "../types/telegram";
-import {InjectModel} from "@nestjs/mongoose";
-import {InstagramPost} from "../instagram/instagram-post.schema";
-import {Model} from "mongoose";
+import {FirebaseService} from "../services/firebase.service";
+import {InstagramPost} from "../types/instagram";
 
 @Injectable()
 export class TelegramSendMessagesService {
   constructor(
     private readonly telegramApiService: TelegramApiService,
-    @InjectModel(InstagramPost.name) private readonly instagramPostModel: Model<InstagramPost>,
+    private readonly firebaseServise: FirebaseService,
     ) {}
 
   private readonly logger = new Logger(TelegramSendMessagesService.name);
 
   async getPost() {
-    console.log('sdss');
     try {
-      const resp = await this.instagramPostModel.aggregate<InstagramPost>([
-        {$match: { posted: false }},
-        {$unwind: '$taken_at_timestamp'},
-        {$sort: {'taken_at_timestamp': 1}},
-        {$limit: 1},
-      ])
-
-      return resp && resp[0] || false;
+      return await this.firebaseServise.getInstagramPost();
     } catch (error) {
       this.logger.error(error)
-      return false
     }
   }
 
@@ -78,17 +68,21 @@ export class TelegramSendMessagesService {
       });
 
       if (response.data.ok) {
-        this.setPosted(post.id)
+        this.setPosted({
+          postId: post.id,
+          postedTimestamp: Date.now(),
+          linkToTelegramMessage: response.data.result.message_id,
+          linkToTelegramChat: response.data.result.chat.id
+        })
       }
     } catch (error) {
       this.logger.error(error)
     }
   }
 
-  async setPosted(id) {
+  async setPosted(messageData) {
     try {
-      const post = await this.instagramPostModel.updateOne({ id },
-        { posted: true, postedDate: Date.now()});
+      const post = await this.firebaseServise.setPosted(messageData)
     } catch(error) {
       this.logger.error(error);
     }

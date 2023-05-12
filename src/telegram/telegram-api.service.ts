@@ -26,7 +26,7 @@ export class TelegramApiService {
       );
       return await response;
     } catch (error) {
-      console.log(error.response.data.description);
+      this.logger.error(error.response.data.description);
     }
   }
 }

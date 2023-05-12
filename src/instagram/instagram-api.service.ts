@@ -4,7 +4,6 @@ import {igApi, getCookie} from "insta-fetcher";
 import {InstagramDBService} from "./instagram-db.service";
 import {InstagramPost} from "../types/instagram";
 import {IPaginatedPosts} from "insta-fetcher/dist/types/PaginatedPosts";
-import {Typename} from "insta-fetcher/dist/types";
 
 @Injectable()
 export class InstagramApiService {
@@ -18,12 +17,13 @@ export class InstagramApiService {
 
   async connect() {
     const sessionId = await this.getSessionId();
+
     if (sessionId) {
       this.ig = new igApi(sessionId.id, false);
       this.logger.debug('connect')
       this.logger.debug(this.ig)
     } else {
-      await this.saveNewSessionId();
+      await this.setSessionId();
       await this.connect();
     }
   }
@@ -32,23 +32,21 @@ export class InstagramApiService {
     return this.instagramDBService.getSessionId();
   }
 
-  async saveNewSessionId() {
+  async setSessionId() {
     const instagramLogin = this.configService.get('INSTAGRAM_LOGIN');
     const instagramPassword = this.configService.get('INSTAGRAM_PASSWORD');
     const newSessionId = await getCookie(instagramLogin, instagramPassword);
     const timestamp = Date.now();
 
-    await this.instagramDBService.setSessionId({ id: newSessionId as string, timestamp})
+    await this.instagramDBService.setSessionId(newSessionId, timestamp)
   }
 
   async getPosts() {
     await this.connect();
 
     if (this.ig) {
-      // await this.instagramDBService.removeAllPosts();
       const response = await this.ig.fetchUserPostsV2('rihannaofficiall');
       this.savePosts(response)
-      this.logger.debug('POSTS WERE UPDATED')
     }
   }
 
@@ -75,9 +73,7 @@ export class InstagramApiService {
     try {
       const updatedPosts = this.proceedPosts(posts);
       const response = await this.instagramDBService.setPosts(updatedPosts)
-      if (!response.success) {
-        this.logger.error('Post was not saved');
-      }
+      this.logger.debug('POSTS WERE UPDATED')
     } catch (error) {
       this.logger.error(error);
     }

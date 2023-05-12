@@ -1,53 +1,40 @@
 import {Injectable, Logger} from "@nestjs/common";
-import {InjectModel} from "@nestjs/mongoose";
-import {InstagramSession} from "./instagram-session.schema";
-import {Model} from "mongoose";
-import {CreateInstagramSessionDto} from "./create-instagram-session.dto";
-import {InstagramPost} from "./instagram-post.schema";
 import {InstagramPost as InstagramPostType} from "../types/instagram";
+import {FirebaseService} from "../services/firebase.service";
 
 @Injectable()
 export class InstagramDBService {
   private readonly logger = new Logger(InstagramDBService.name);
 
   constructor(
-    @InjectModel(InstagramSession.name) private readonly instagramSessionModel: Model<InstagramSession>,
-    @InjectModel(InstagramPost.name) private readonly instagramPostModel: Model<InstagramPost>,
+    private readonly firebaseService: FirebaseService
   ) {}
 
-  async setSessionId(createInstagramSessionDto: CreateInstagramSessionDto): Promise<InstagramSession> {
-    const createdSession = await this.instagramSessionModel.create(createInstagramSessionDto);
-    return createdSession;
+  async setSessionId(id, timestamp) {
+    try {
+      this.firebaseService.setInstagramSession(id, timestamp);
+    } catch(e) {
+      this.logger.error(e)
+    }
   }
 
-  async getSessionId(): Promise<InstagramSession> {
-    const session = this.instagramSessionModel.findOne().exec();
-
-    return session;
+  async getSessionId() {
+    try {
+      return await this.firebaseService.getInstagramSession();
+    } catch(e) {
+      this.logger.error(e)
+    }
   }
 
   async removeAllPosts() {
-    await this.instagramPostModel.deleteMany();
+    // await this.instagramPostModel.deleteMany();
   }
 
-  async setPosts(posts: InstagramPostType[]): Promise<{ success: boolean }> {
+  async setPosts(posts: InstagramPostType[]) {
     try {
-      const oldPosts = await this.instagramPostModel.find();
-      const postsToAdd = posts.filter(newPost => !oldPosts.some(oldPost => oldPost.id === newPost.id))
-
-      if (postsToAdd) {
-        await this.instagramPostModel.insertMany(postsToAdd);
-      }
-
-      return {
-        success: true
-      };
-    } catch (error) {
-      this.logger.error(error);
-
-      return {
-        success: false
-      }
+      this.firebaseService.saveInstagramPosts(posts);
+    } catch(e) {
+      this.logger.error(e)
     }
   }
 }
