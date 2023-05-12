@@ -1,6 +1,7 @@
 import {Injectable, Logger} from '@nestjs/common';
 import * as firebaseAdmin from 'firebase-admin';
 import {InstagramPost, InstagramSession} from "../types/instagram";
+import {ConfigService} from "@nestjs/config";
 
 @Injectable()
 export class FirebaseService {
@@ -8,28 +9,38 @@ export class FirebaseService {
   private app: ReturnType<typeof firebaseAdmin.initializeApp>
   private readonly logger = new Logger(FirebaseService.name);
 
-  constructor() {
+  constructor(
+    private readonly configService: ConfigService
+  ) {
     this.initialize();
+  }
+
+  async initialize() {
+    this.db = this.getFireStore();
   }
 
   getFireStore() {
     if (!this.app && !firebaseAdmin.apps.length) {
       try {
-        const serviceAccount = require("../../dopqf-3576f476bf.json");
+        const serviceAccount = {
+          projectId: this.configService.get('PROJECT_ID'),
+          privateKey: this.configService.get('PRIVATE_KEY').replace(/\\n/g, '\n'),
+          clientEmail: this.configService.get('CLIENT_EMAIL'),
+        }
         this.app = firebaseAdmin.initializeApp({
-          credential: firebaseAdmin.credential.cert(serviceAccount)
-        })
-        firebaseAdmin.firestore().settings({ignoreUndefinedProperties:true});
+          credential: firebaseAdmin.credential.cert(serviceAccount),
+          databaseURL: "https://memellindb-default-rtdb.firebaseio.com",
+        });
+
+        firebaseAdmin.firestore().settings({
+          ignoreUndefinedProperties:true
+        });
       } catch (error) {
         this.logger.error(error)
       }
     }
 
     return firebaseAdmin.firestore()
-  }
-
-  async initialize() {
-    this.db = this.getFireStore();
   }
 
   async getInstagramSession() {
@@ -76,6 +87,7 @@ export class FirebaseService {
         .limit(1)
         .get();
 
+      console.log('post');
       if (snapshot.empty) {
         this.logger.debug('No matching document');
         return;
