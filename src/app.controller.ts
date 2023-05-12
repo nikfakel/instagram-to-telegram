@@ -16,7 +16,7 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get()
+  @Get('test')
   getPost() {
     return this.firebaseService.getInstagramPost();
   }
