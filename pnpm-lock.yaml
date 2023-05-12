@@ -25,6 +25,9 @@ dependencies:
   axios:
     specifier: ^1.4.0
     version: 1.4.0
+  dotenv:
+    specifier: ^16.0.3
+    version: 16.0.3
   firebase:
     specifier: ^9.21.0
     version: 9.21.0

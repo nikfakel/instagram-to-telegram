@@ -37,7 +37,7 @@ export class FirebaseService {
         }
         this.app = firebaseAdmin.initializeApp({
           credential: firebaseAdmin.credential.cert(serviceAccount),
-          databaseURL: "https://memellindb-default-rtdb.firebaseio.com",
+          databaseURL: process.env.DATABASE_URL,
         });
 
         firebaseAdmin.firestore().settings({
