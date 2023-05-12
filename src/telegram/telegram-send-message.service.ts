@@ -14,7 +14,6 @@ export class TelegramSendMessagesService {
     private readonly firebaseServise: FirebaseService,
     ) {}
 
-  @Cron('* */30 * * * *')
   async handleCron() {
     const newPost = await this.getPost()
 
