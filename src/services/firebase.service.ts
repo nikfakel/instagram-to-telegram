@@ -20,14 +20,6 @@ export class FirebaseService {
   }
 
   getFireStore() {
-    this.logger.debug('PROCESSENV');
-    console.log('PROCESSENV console.log');
-    this.logger.debug(this.configService.get('PROJECT_ID'));
-    this.logger.debug(this.configService.get('CLIENT_EMAIL'));
-    this.logger.debug(process.env);
-    this.logger.debug(process.env.PROJECT_ID);
-    this.logger.debug(process.env.CLIENT_EMAIL);
-
     if (!this.app && !firebaseAdmin.apps.length) {
       try {
         const serviceAccount = {
