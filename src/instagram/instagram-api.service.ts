@@ -43,7 +43,7 @@ export class InstagramApiService {
     await this.connect();
 
     if (this.ig) {
-      const response = await this.ig.fetchUserPostsV2('rihannaofficiall');
+      const response = await this.ig.fetchUserPostsV2('memellin02');
       this.savePosts(response)
     }
   }

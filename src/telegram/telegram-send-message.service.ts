@@ -7,27 +7,27 @@ import {InstagramPost} from "../types/instagram";
 
 @Injectable()
 export class TelegramSendMessagesService {
+  private readonly logger = new Logger(TelegramSendMessagesService.name);
+
   constructor(
     private readonly telegramApiService: TelegramApiService,
     private readonly firebaseServise: FirebaseService,
     ) {}
 
-  private readonly logger = new Logger(TelegramSendMessagesService.name);
+  @Cron('* */30 * * * *')
+  async handleCron() {
+    const newPost = await this.getPost()
+
+    if (newPost) {
+      this.sendPost(newPost);
+    }
+  }
 
   async getPost() {
     try {
       return await this.firebaseServise.getInstagramPost();
     } catch (error) {
       this.logger.error(error)
-    }
-  }
-
-  // @Cron('*/20 * * * * *')
-  async handleCron() {
-    const newPost = await this.getPost()
-
-    if (newPost) {
-      this.sendPost(newPost);
     }
   }
 

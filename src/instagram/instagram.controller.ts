@@ -1,5 +1,6 @@
 import {Controller, Logger} from "@nestjs/common";
 import {InstagramApiService} from "./instagram-api.service";
+import {Cron} from "@nestjs/schedule";
 
 @Controller()
 export class InstagramController {
@@ -11,7 +12,12 @@ export class InstagramController {
     // this.getPosts();
   }
 
+  @Cron('* */29 * * * *')
   async getPosts() {
-    this.instagramApiService.getPosts();
+    try {
+      this.instagramApiService.getPosts();
+    } catch(e) {
+      this.logger.error(e)
+    }
   }
 }
