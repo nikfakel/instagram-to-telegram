@@ -12,8 +12,17 @@ export class InstagramController {
     // this.getPosts();
   }
 
-  // @Cron('* */29 * * * *')
+  // @Cron('* * * * * *')
   async getPosts() {
+    try {
+      await this.instagramApiService.getPosts();
+    } catch(e) {
+      this.logger.error(e)
+    }
+  }
+
+  @Get('get-posts')
+  async getPostsManual() {
     try {
       const response = await this.instagramApiService.getPosts();
       console.log(response);
@@ -22,11 +31,6 @@ export class InstagramController {
       this.logger.error(e)
       return e;
     }
-  }
-
-  @Get('get-posts')
-  async getPostsManual() {
-    this.getPosts();
   }
 
   @Get('remove-posts')

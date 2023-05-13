@@ -13,12 +13,12 @@ export class TelegramSendMessagesService {
     private readonly firebaseServise: FirebaseService,
     ) {}
 
-  async handleCron() {
+  async sendPost() {
     try {
       const newPost = await this.getPost()
 
       if (newPost) {
-        this.sendPost(newPost);
+        this.sendRequest(newPost);
 
         return newPost
       } else {
@@ -38,12 +38,39 @@ export class TelegramSendMessagesService {
     }
   }
 
-  async sendPost(post: InstagramPost) {
+  async sendRequest(post) {
+    const { data, header } = this.createMessage(post);
+
+    try {
+      const response = await this.telegramApiService.sendRequest(header, {
+        chat_id: '@rihanna_instagram',
+        ...data,
+      });
+
+      if (response.data.ok) {
+        this.setPosted({
+          postId: data.id,
+          postedTimestamp: Date.now(),
+          linkToTelegramMessage: response.data.result.message_id,
+          linkToTelegramChat: response.data.result.chat.id
+        })
+      }
+    } catch (error) {
+      this.logger.error(error)
+    }
+  }
+
+  createMessage(post: InstagramPost) {
     let data: {
+      id: string;
       media?: string;
       photo?: string;
       video?: string;
-    } = {};
+      caption?: string;
+    } = {
+      id: post.id,
+      caption: post.caption
+    };
     let header = undefined;
     let media = [];
 
@@ -68,24 +95,7 @@ export class TelegramSendMessagesService {
       data.media = JSON.stringify(media)
     }
 
-    try {
-      const response = await this.telegramApiService.sendRequest(header, {
-        chat_id: '@rihanna_instagram',
-        caption: post.caption,
-        ...data,
-      });
-
-      if (response.data.ok) {
-        this.setPosted({
-          postId: post.id,
-          postedTimestamp: Date.now(),
-          linkToTelegramMessage: response.data.result.message_id,
-          linkToTelegramChat: response.data.result.chat.id
-        })
-      }
-    } catch (error) {
-      this.logger.error(error)
-    }
+    return { data, header }
   }
 
   async setPosted(messageData) {

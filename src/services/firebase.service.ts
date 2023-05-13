@@ -80,7 +80,7 @@ export class FirebaseService {
     try {
       const snapshot = await this.db.collection('posts')
         .where('posted', '==', false)
-        .orderBy('taken_at_timestamp', 'desc')
+        .orderBy('taken_at_timestamp', 'asc')
         .limit(1)
         .get();
 
@@ -95,10 +95,10 @@ export class FirebaseService {
     }
   }
 
-  async setPosted({ postId, postedTimestamp, linkToTelegramMessage }) {
+  async setPosted({ postId, postedTimestamp, linkToTelegramMessage, linkToTelegramChat }) {
     try {
       await this.db.collection('posts').doc(postId)
-        .update({posted: true, postedTimestamp, linkToTelegramMessage});
+        .update({posted: true, postedTimestamp, linkToTelegramMessage, linkToTelegramChat});
     } catch(e) {
       this.logger.error(e);
     }
