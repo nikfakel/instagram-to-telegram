@@ -13,7 +13,8 @@ export class TelegramController {
     // this.telegramSendMessageService.sendPost();
   }
 
-  @Cron('0 */1 * * * *')
+  // cron doesnt work on my server automatically
+  // @Cron('0 */1 * * * *')
   async sendPost() {
     if (isProduction()) {
       try {

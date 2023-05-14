@@ -13,7 +13,8 @@ export class InstagramController {
     // this.getPosts();
   }
 
-  @Cron('0 */30 * * * *')
+  // cron doesnt work on my server automatically
+  // @Cron('0 */30 * * * *')
   async getPosts() {
     try {
       if (isProduction()) {
