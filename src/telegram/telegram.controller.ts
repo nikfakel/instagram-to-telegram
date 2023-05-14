@@ -40,6 +40,17 @@ export class TelegramController {
 
   @Get('send-post')
   async sendPostManual() {
-    this.sendPost();
+    try {
+      return this.telegramSendMessageService.sendPost();
+    } catch(e) {
+      this.logger.error(e)
+    }
+  }
+
+  @Get(process.env.WEBHOOKS_URI)
+  async onTelegramWebhook(update, token) {
+    this.logger.debug('onTelegramWebhook')
+    this.logger.debug(update);
+    this.logger.debug(token);
   }
 }

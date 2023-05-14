@@ -1,5 +1,5 @@
 import {Controller, Logger} from '@nestjs/common';
-import Context, {NarrowedContext, Telegraf, Telegram } from 'telegraf';
+import { Telegraf } from 'telegraf';
 import { message } from 'telegraf/filters';
 
 @Controller('telegram-bot')
@@ -8,7 +8,7 @@ export class TelegramBotController {
   private bot: Telegraf;
 
   constructor() {
-    this.initialize();
+    // this.initialize();
   }
 
   initialize() {
@@ -16,7 +16,26 @@ export class TelegramBotController {
 
     this.applyCommands()
 
-    this.bot.launch();
+    const { SERVER_URL: serverUrl, WEBHOOKS_URI: webhooksUri } = process.env;
+
+    console.log(this.bot.secretPathComponent());
+
+    this.bot.launch({
+      webhook: {
+        domain: serverUrl,
+
+        // Port to listen on; e.g.: 8080
+        port: 443,
+
+        // Optional path to listen for.
+        // `bot.secretPathComponent()` will be used by default
+        hookPath: 'tghooks',
+
+        // Optional secret to be sent back in a header for security.
+        // e.g.: `crypto.randomBytes(64).toString("hex")`
+        secretToken: '123123',
+      },
+    });
   }
 
   applyCommands() {
