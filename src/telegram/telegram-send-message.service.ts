@@ -48,7 +48,7 @@ export class TelegramSendMessagesService {
       });
 
       this.logger.debug('sendRequest in TelegramSendMessagesService')
-      this.logger.debug(response);
+      console.log(response);
 
       if (response.data.ok) {
         this.setPosted({
@@ -59,7 +59,7 @@ export class TelegramSendMessagesService {
         })
       }
     } catch (error) {
-      this.logger.error(error)
+      this.logger.error(error, '', 'sendRequest')
     }
   }
 
@@ -91,7 +91,6 @@ export class TelegramSendMessagesService {
       if (post.is_video) {
         media = [{ type: 'photo', media: post.video_url}, ...post.media.map(item => ({ type: 'photo', media: item }))];
       } else {
-        console.log(post);
         media = post.media.map(item => ({ type: 'photo', media: item }))
       }
 

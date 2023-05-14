@@ -12,7 +12,10 @@ import { TelegramBotController } from './telegram-bot.controller';
     ScheduleModule.forRoot(),
     HttpModule,
   ],
-  controllers: [TelegramController, TelegramBotController],
+  controllers: [
+    TelegramController,
+    TelegramBotController
+  ],
   providers: [
     TelegramApiService,
     TelegramSendMessagesService,

@@ -97,7 +97,7 @@ export class FirebaseService {
 
   async setPosted({ postId, postedTimestamp, linkToTelegramMessage, linkToTelegramChat }) {
     try {
-      await this.db.collection('posts').doc(postId)
+      return await this.db.collection('posts').doc(postId)
         .update({posted: true, postedTimestamp, linkToTelegramMessage, linkToTelegramChat});
     } catch(e) {
       this.logger.error(e);
