@@ -18,7 +18,7 @@ export class InstagramController {
   async getPosts() {
     try {
       if (isProduction()) {
-        await this.instagramApiService.getPosts();
+        return this.instagramApiService.getPosts();
       } else {
         this.logger.debug('get posts')
       }
@@ -33,7 +33,8 @@ export class InstagramController {
   async getPostsManual() {
     try {
       const response = await this.instagramApiService.getPosts();
-      console.log(response);
+      this.logger.debug('getPostsManual in InstagramController');
+      this.logger.debug(response);
       return response;
     } catch(e) {
       this.logger.error(e)

@@ -69,7 +69,6 @@ export class InstagramApiService {
   async savePosts(posts: IPaginatedPosts) {
     try {
       const updatedPosts = this.proceedPosts(posts);
-      console.log(updatedPosts);
       const response = await this.instagramDBService.setPosts(updatedPosts)
       this.logger.debug('POSTS WERE UPDATED')
       return updatedPosts;

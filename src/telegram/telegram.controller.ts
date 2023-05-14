@@ -16,22 +16,26 @@ export class TelegramController {
   // cron doesnt work on my server automatically
   // @Cron('0 */1 * * * *')
   async sendPost() {
-    if (isProduction()) {
-      try {
+    try {
+      this.logger.debug('isProduction() in TelegramController');
+      this.logger.debug(isProduction())
+      if (isProduction()) {
         this.telegramSendMessageService.sendPost();
-      } catch(e) {
-        this.logger.error(e);
+      } else {
+        this.logger.debug('sendPost') // skipp sending posts in dev mode
       }
-    } else {
-      this.logger.debug('sendPost');
+    } catch (e) {
+      this.logger.error(e);
     }
   }
 
   @Get('get-post')
   async getNextPost() {
-    const response = this.telegramSendMessageService.getPost();
-    console.log(response);
-    return response;
+    try {
+      const response = this.telegramSendMessageService.getPost();
+    } catch(e) {
+      this.logger.error(e);
+    }
   }
 
   @Get('send-post')

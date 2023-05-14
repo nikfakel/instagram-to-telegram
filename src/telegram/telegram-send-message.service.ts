@@ -47,6 +47,9 @@ export class TelegramSendMessagesService {
         ...data,
       });
 
+      this.logger.debug('sendRequest in TelegramSendMessagesService')
+      this.logger.debug(response);
+
       if (response.data.ok) {
         this.setPosted({
           postId: data.id,
