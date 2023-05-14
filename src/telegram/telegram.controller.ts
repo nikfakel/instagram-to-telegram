@@ -1,4 +1,4 @@
-import {Controller, Get, Logger} from "@nestjs/common";
+import {Controller, Get, Logger, Post} from "@nestjs/common";
 import {TelegramSendMessagesService} from "./telegram-send-message.service";
 import {Cron} from "@nestjs/schedule";
 import {isProduction} from "../helpers/node-env";
@@ -47,7 +47,7 @@ export class TelegramController {
     }
   }
 
-  @Get(process.env.WEBHOOKS_URI)
+  @Post(process.env.WEBHOOKS_URI)
   async onTelegramWebhook(update, token) {
     this.logger.debug('onTelegramWebhook')
     this.logger.debug(update);
