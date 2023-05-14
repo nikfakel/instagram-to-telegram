@@ -1,16 +1,29 @@
-import {Controller, Get} from "@nestjs/common";
+import {Controller, Get, Logger} from "@nestjs/common";
 import {TelegramSendMessagesService} from "./telegram-send-message.service";
 import {Cron} from "@nestjs/schedule";
+import {isProduction} from "../helpers/node-env";
 
 @Controller()
 export class TelegramController {
-  constructor(private readonly telegramSendMessageService: TelegramSendMessagesService) {
+  private readonly logger: Logger = new Logger(TelegramController.name);
+
+  constructor(
+    private readonly telegramSendMessageService: TelegramSendMessagesService,
+  ) {
     // this.telegramSendMessageService.sendPost();
   }
 
   @Cron('0 */1 * * * *')
   async sendPost() {
-    this.telegramSendMessageService.sendPost();
+    if (isProduction()) {
+      try {
+        this.telegramSendMessageService.sendPost();
+      } catch(e) {
+        this.logger.error(e);
+      }
+    } else {
+      this.logger.debug('sendPost');
+    }
   }
 
   @Get('get-post')

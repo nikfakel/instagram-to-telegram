@@ -1,6 +1,7 @@
 import {Controller, Get, Logger} from "@nestjs/common";
 import {InstagramApiService} from "./instagram-api.service";
 import {Cron} from "@nestjs/schedule";
+import {isProduction} from "../helpers/node-env";
 
 @Controller()
 export class InstagramController {
@@ -12,14 +13,20 @@ export class InstagramController {
     // this.getPosts();
   }
 
-  // @Cron('* * * * * *')
+  @Cron('0 */30 * * * *')
   async getPosts() {
     try {
-      await this.instagramApiService.getPosts();
+      if (isProduction()) {
+        await this.instagramApiService.getPosts();
+      } else {
+        this.logger.debug('get posts')
+      }
     } catch(e) {
       this.logger.error(e)
     }
   }
+
+
 
   @Get('get-posts')
   async getPostsManual() {
