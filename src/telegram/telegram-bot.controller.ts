@@ -1,6 +1,8 @@
 import {Controller, Logger} from '@nestjs/common';
-import { Telegraf } from 'telegraf';
-import { message } from 'telegraf/filters';
+import { Telegraf,Markup  } from 'telegraf';
+import {callbackQuery, message} from 'telegraf/filters';
+import {FirebaseService} from "../services/firebase.service";
+import {TelegramApiService} from "./telegram-api.service";
 const EventSource =  require('eventsource');
 
 @Controller('telegram-bot')
@@ -8,49 +10,90 @@ export class TelegramBotController {
   private readonly logger: Logger = new Logger(TelegramBotController.name);
   private bot: Telegraf = null;
 
-  constructor() {
-    console.log(this.bot);
-    if (!this.bot) {
-      // this.initialize();
+  constructor(
+    private readonly firebaseService: FirebaseService,
+    private readonly telegramApiService: TelegramApiService,
+  ) {
+    if (this.bot) {
+      this.bot.stop('reinitialize')
     }
+
+    this.initialize();
   }
 
   async initialize() {
-    const eventSourceInit = { headers: {"Authorization": "Bearer 0136d3c3d4b3d23a355cfec7d0810be3", } }
-    const es = new EventSource("https://api.pipedream.com/sources/dc_eKu1qQ2/sse", eventSourceInit);
-
-    console.log("Listening to SSE stream at https://api.pipedream.com/sources/dc_eKu1qQ2/sse\n");
-
-    es.onmessage = event => {
-      console.log(event.data);
+    const token = process.env.TELEGRAM_TOKEN;
+    if (token === undefined) {
+      throw new Error('BOT_TOKEN must be provided!')
     }
 
-    this.bot = new Telegraf(process.env.TELEGRAM_TOKEN);
+    this.bot = new Telegraf(token);
 
     this.applyCommands();
     this.stopBotOnAppStop();
-
-    console.log(this.bot.secretPathComponent());
-
-    this.bot.command('/bit', (a) => {
-      console.log('bit');
-      console.log(a);
-    })
-
-    this.bot.telegram.setMyCommands([
-      { command: "Add instagram", description: "Set new instagram account for parsing" },
-      { command: "Add instagrams", description: "Set new instagram account for parsings" },
-    ]);
+    this.setCommands();
 
     this.bot.launch();
   }
 
   applyCommands() {
     this.onStart();
-    this.bot.help((ctx) => ctx.reply('Send me a sticker'));
+    this.onAddInstagram()
+    this.onPressSaveButton();
+
+    this.bot.help((ctx) => ctx.reply('Send me a help'));
     this.bot.settings((ctx) => ctx.reply('Send me a settings'));
-    this.bot.on(message('sticker'), (ctx) => ctx.reply('👍'));
+    this.bot.on(message('sticker'), (ctx) => {
+      console.log(ctx.message);  ctx.reply('👍')});
     this.bot.hears('hi', (ctx) => ctx.reply('Hey there'));
+  }
+
+  onPressSaveButton() {
+    this.bot.on(callbackQuery('data'), async (ctx) => {
+      const { update: { callback_query: { data, id, from: { id: userId } }  }} = ctx;
+
+      const dataCommand = JSON.parse(data);
+
+      if (dataCommand.c === 'save_changes') {
+        ctx.reply('Setting were saved')
+        this.firebaseService.saveNewChannel({
+          userId,
+          channel: dataCommand.ch,
+          instagram: dataCommand.i,
+        })
+        return this.bot.telegram.answerCbQuery(id, 'New channel was saved')
+      }
+    });
+  }
+
+  onAddInstagram() {
+    this.bot.command('addinstagram', (ctx) => {
+      this.checkAddInstagram(ctx);
+    })
+  }
+
+  checkAddInstagram(ctx) {
+    const words = ctx.message.text.split(' ');
+
+    if (words.length === 3 && words[0] === '/addinstagram') {
+      const instaLink = `https://www.instagram.com/${words[1]}/`;
+      const channelLink = `https://t.me/${words[2]}`;
+
+      ctx.reply(instaLink)
+      ctx.reply(channelLink)
+
+      const data = JSON.stringify({c: 'save_changes', i: words[1], ch: words[2] })
+      return ctx.reply('Check this links. If it\'s correct, press <b>Save</b> button', {
+        parse_mode: 'HTML',
+        ...Markup.inlineKeyboard([
+          Markup.button.callback('Save', data),
+        ])
+      })
+    } else {
+      ctx.reply(`Wrong command usage. Please use command /addinstagram as this: 
+        /addinstagram instagram_account telegram_channel
+      `)
+    }
   }
 
   stopBotOnAppStop() {
@@ -62,6 +105,12 @@ export class TelegramBotController {
       console.log('bot stopped SIGTERM');
       this.bot.stop('SIGTERM')
     });
+  }
+
+  setCommands() {
+    this.bot.telegram.setMyCommands([
+      { command: "addinstagram", description: "Set new instagram account for parsing" },
+    ]);
   }
 
   onStart() {
@@ -79,7 +128,28 @@ export class TelegramBotController {
   }
 
   saveUser(getChat) {
-    const { id, first_name: firstName, last_name: lastName, username, type, active_usernames: activeUsernames} = getChat;
-    console.log(firstName);
+    const {
+      id,
+      first_name: firstName,
+      last_name: lastName,
+      username,
+      type,
+      active_usernames: activeUsernames
+    } = getChat;
+
+    const user = {
+      id,
+      firstName,
+      lastName,
+      username,
+      type,
+      activeUsernames
+    }
+
+    try {
+      this.firebaseService.saveUser(user)
+    } catch(e) {
+      this.logger.error(e)
+    }
   }
 }

@@ -149,4 +149,21 @@ export class FirebaseService {
       this.logger.error(e)
     }
   }
+
+  async saveUser(userData) {
+    try {
+      const user = await this.db.collection('users').doc(String(userData.id)).get()
+
+      if (!user.exists) {
+        await this.db.collection('users').doc(String(userData.id)).set(userData);
+      }
+    } catch(e) {
+      this.logger.error(e)
+    }
+  }
+
+  async saveNewChannel({ userId, channel, instagram }) {
+    console.log('saveNewChannel');
+    console.log(userId, channel, instagram);
+  }
 }
