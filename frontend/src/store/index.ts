@@ -17,10 +17,10 @@ export enum ApiMethod {
 
 const DOMAIN = 'http://localhost:3000';
 
-export const getData = async (
+export const getData = async <T>(
   method: ApiMethod,
   apiPoint: string,
-  body?: { [key: string]: string }): Promise<string> => {
+  body?: { [key: string]: string }): Promise<T> => {
   const response = await fetch(`${DOMAIN}/${apiPoint}`, {
     method,
     body: JSON.stringify(body)

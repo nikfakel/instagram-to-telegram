@@ -1,8 +1,7 @@
 "use client"
 
 import Link from "next/link";
-import {useEffect, useState,Fragment} from "react";
-import {ApiMethod, getData} from "../../store";
+import {Fragment} from "react";
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
@@ -18,16 +17,6 @@ function classNames(...classes: string[]) {
 }
 
 export const MainMenu = () => {
-  const [data, setData] = useState<string>('test')
-  useEffect(() => {
-    const getUsers = async () => {
-      const response = await getData(ApiMethod.GET, 'get-post');
-      setData(response);
-    }
-
-    getUsers();
-  }, [])
-
   return (
     <Disclosure as="nav" className="bg-gray-800">
       {({ open }) => (
