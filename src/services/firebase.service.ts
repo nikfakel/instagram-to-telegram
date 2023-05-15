@@ -180,21 +180,25 @@ export class FirebaseService {
   }
 
   async saveNewChannel({ userId, channel, instagram }: { userId: number, channel: string, instagram: string }) {
-    const userDataSnapshot = await this.db.collection('users').doc(String(userId)).get();
-    const userData = userDataSnapshot.data();
+    try {
+      const userDataSnapshot = await this.db.collection('users').doc(String(userId)).get();
+      const userData = userDataSnapshot.data() as TUser;
 
-    if (userData && userData.instagram && !userData.instagram[channel]) {
-      await this.db.collection('users').doc(String(userId)).update({
-        [`instagram.${channel}`]: {
-          instagram,
-          startedAt: Date.now(),
-          isStopped: false
-        }
-      })
+      if (userData && userData.parsers && !userData.parsers[channel]) {
+        await this.db.collection('users').doc(String(userId)).update({
+          [`parsers.${channel}`]: {
+            instagram,
+            startedAt: Date.now(),
+            isStopped: false
+          }
+        })
 
-      return 'Channel was added'
-    } else {
-      return 'Channel already exists'
+        return 'Channel was added'
+      } else {
+        return 'Channel already exists'
+      }
+    } catch(e) {
+      this.logger.error(e)
     }
   }
 

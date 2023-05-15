@@ -54,17 +54,20 @@ export class TelegramBotController {
   onPressSaveButton() {
     this.bot.on(callbackQuery('data'), async (ctx) => {
       const { update: { callback_query: { data, id, from: { id: userId } }  }} = ctx;
-
       const dataCommand = JSON.parse(data);
 
       if (dataCommand.c === 'save_changes') {
         ctx.reply('Setting were saved')
-        this.firebaseService.saveNewChannel({
-          userId,
-          channel: dataCommand.ch,
-          instagram: dataCommand.i,
-        })
-        return this.bot.telegram.answerCbQuery(id, 'New channel was saved')
+        try {
+          await this.firebaseService.saveNewChannel({
+            userId,
+            channel: dataCommand.ch,
+            instagram: dataCommand.i,
+          })
+          return this.bot.telegram.answerCbQuery(id, 'New channel was saved')
+        } catch(e) {
+          this.logger.error(e)
+        }
       }
     });
   }
@@ -72,6 +75,8 @@ export class TelegramBotController {
   onAddParser() {
     this.bot.command('addparser', (ctx) => {
       const words = ctx.message.text.split(' ');
+
+      console.log(words);
 
       if (words.length === 3 && words[0] === '/addparser') {
         const instaLink = `https://www.instagram.com/${words[1]}/`;
