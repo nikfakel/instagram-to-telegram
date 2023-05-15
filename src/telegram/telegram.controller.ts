@@ -20,7 +20,9 @@ export class TelegramController {
       this.logger.debug('isProduction() in TelegramController');
       this.logger.debug(isProduction())
       if (isProduction()) {
-        this.telegramSendMessageService.sendPost();
+        this.telegramSendMessageService.sendPost({
+          id: 12312893818
+        });
       } else {
         this.logger.debug('sendPost') // skipp sending posts in dev mode
       }
@@ -32,7 +34,9 @@ export class TelegramController {
   @Get('get-post')
   async getNextPost() {
     try {
-      const response = this.telegramSendMessageService.getPost();
+      const response = this.telegramSendMessageService.getPost({
+        id: 12312893818
+      });
     } catch(e) {
       this.logger.error(e);
     }
@@ -41,7 +45,7 @@ export class TelegramController {
   @Get('send-post')
   async sendPostManual() {
     try {
-      return this.telegramSendMessageService.sendPost();
+      return this.telegramSendMessageService.sendPost("12312893818");
     } catch(e) {
       this.logger.error(e)
     }

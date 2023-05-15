@@ -78,19 +78,19 @@ export class FirebaseService {
     }
   }
 
-  async getInstagramPost(user, instagram) {
+  async getInstagramPost(userId) {
     try {
-      const userChannelData = await this.db
+      const userData = await this.db
         .collection('users')
-        .doc(user.id)
+        .doc(userId)
         .get();
 
-      const userChannel = userChannelData.data();
-      const lastPostTimestamp = userChannel.posted[instagram].postedTimestamp
+      const user = userData.data();
+      const lastPostTimestamp = user.posted[user.instagram[0]].takenAtTimestamp;
 
       const snapshot = await this.db
         .collection('instagram')
-        .doc(userChannel.instagram[0])
+        .doc(user.instagram[0])
         .collection('posts')
         .where('taken_at_timestamp', '>', lastPostTimestamp)
         .orderBy('taken_at_timestamp', 'asc')
@@ -99,25 +99,42 @@ export class FirebaseService {
 
       if (snapshot.empty) {
         this.logger.debug('No matching document');
-        return false;
+        return {
+          user: null,
+          post: null,
+        };
       } else {
-        return snapshot.docs.map((item) => item.data())[0] as InstagramPost;
+        return {
+          user,
+          post: snapshot.docs.map((item) => item.data())[0] as InstagramPost
+        }
       }
     } catch(e) {
       this.logger.error(e);
     }
   }
 
-  async setPosted({ instagram, user, postId, postedTimestamp, linkToTelegramMessage, linkToTelegramChat }) {
+  async setPosted(
+    {
+      instagram,
+      user,
+      postId,
+      takenAtTimestamp,
+      postedTimestamp,
+      linkToTelegramMessage,
+      linkToTelegramChat
+    }) {
+
     try {
       return await this.db
         .collection('users')
         .doc(user.id)
-        .update({ posted: {
-          [instagram]: { postId, postedTimestamp, linkToTelegramMessage, linkToTelegramChat }
+        .update({ [`posted.${instagram}`]: {
+           postId, takenAtTimestamp, postedTimestamp, linkToTelegramMessage, linkToTelegramChat
         }});
     } catch(e) {
       this.logger.error(e);
+      return e;
     }
   }
 

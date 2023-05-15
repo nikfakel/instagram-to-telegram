@@ -13,16 +13,16 @@ export class TelegramSendMessagesService {
     private readonly firebaseServise: FirebaseService,
     ) {}
 
-  async sendPost() {
+  async sendPost(userId) {
     try {
-      const newPost = await this.getPost()
+      const {user, post} = await this.getPost(userId)
 
-      if (newPost) {
-        this.sendRequest(newPost);
+      if (user && post) {
+        this.sendRequest(user, post);
 
-        return newPost
+        return post
       } else {
-        return 'Error'
+        return 'New post not found'
       }
     } catch(e) {
       this.logger.error(e);
@@ -30,40 +30,40 @@ export class TelegramSendMessagesService {
     }
   }
 
-  async getPost() {
+  async getPost(userId) {
     try {
-      return await this.firebaseServise.getInstagramPost({
-        channel: 'rihannaofficiall',
-        id: '12312893818',
-        lastPostTimestamp: '11',
-      }, 'rihanna');
+      return await this.firebaseServise.getInstagramPost(userId);
     } catch (error) {
       this.logger.error(error)
     }
   }
 
-  async sendRequest(post) {
+  async sendRequest(user, post) {
     const { data, header } = this.createMessage(post);
-
     try {
       const response = await this.telegramApiService.sendRequest(header, {
         chat_id: '@rihanna_instagram',
         ...data,
       });
 
-      this.logger.debug('sendRequest in TelegramSendMessagesService')
-      console.log(response);
-
       if (response.data.ok) {
-        this.setPosted({
+        const chatId = Array.isArray(response.data.result)
+          ? response.data.result[0].chat.id
+          : response.data.result.chat.id;
+
+        return this.setPosted({
+          instagram: user.instagram[0],
+          user: user,
           postId: data.id,
           postedTimestamp: Date.now(),
           linkToTelegramMessage: response.data.result.message_id,
-          linkToTelegramChat: response.data.result.chat.id
+          linkToTelegramChat: chatId,
+          takenAtTimestamp: data.takenAtTimestamp
         })
       }
-    } catch (error) {
-      this.logger.error(error, '', 'sendRequest')
+    } catch (e) {
+      this.logger.error(e, '', 'sendRequest')
+      return e
     }
   }
 
@@ -74,9 +74,11 @@ export class TelegramSendMessagesService {
       photo?: string;
       video?: string;
       caption?: string;
+      takenAtTimestamp?: number;
     } = {
       id: post.id,
-      caption: post.caption
+      caption: post.caption,
+      takenAtTimestamp: post.taken_at_timestamp
     };
     let header = undefined;
     let media = [];
@@ -106,9 +108,10 @@ export class TelegramSendMessagesService {
 
   async setPosted(messageData) {
     try {
-      const post = await this.firebaseServise.setPosted(messageData)
-    } catch(error) {
-      this.logger.error(error);
+      return await this.firebaseServise.setPosted(messageData)
+    } catch(e) {
+      this.logger.error(e);
+      return e
     }
   }
 }

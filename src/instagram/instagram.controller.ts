@@ -20,10 +20,8 @@ export class InstagramController {
   @Get('test')
   async getDB(){
     return this.firebaseService.getInstagramPost({
-      channel: 'rihannaofficiall',
       id: '12312893818',
-      lastPostTimestamp: '11',
-    }, 'rihanna')
+    })
   }
 
   // cron doesnt work on my server automatically
@@ -42,8 +40,6 @@ export class InstagramController {
 
   @Get('get-posts')
   async getPostsManual(@Query() query: { [key: string]: string }) {
-    console.log(query);
-    console.log(query.account);
     try {
       const response = await this.instagramApiService.getPosts(query.account);
       this.logger.debug('getPostsManual in InstagramController');

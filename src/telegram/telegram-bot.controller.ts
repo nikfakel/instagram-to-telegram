@@ -3,7 +3,6 @@ import { Telegraf } from 'telegraf';
 import { message } from 'telegraf/filters';
 const EventSource =  require('eventsource');
 
-console.log(EventSource);
 @Controller('telegram-bot')
 export class TelegramBotController {
   private readonly logger: Logger = new Logger(TelegramBotController.name);
