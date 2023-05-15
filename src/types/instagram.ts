@@ -12,10 +12,6 @@ export type InstagramPost = Pick<
 > & {
   media?: string[]; // from edge_sidecar_to_children
   caption?: string; // from edge_media_to_caption
-  posted: boolean;
-  postedTimestamp?: number;
-  linkToTelegramMessage?: string;
-  linkToTelegramChat?: string;
 }
 
 export type InstagramSession = {

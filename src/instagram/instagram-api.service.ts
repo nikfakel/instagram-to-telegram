@@ -37,12 +37,17 @@ export class InstagramApiService {
     await this.instagramDBService.setSessionId(newSessionId, timestamp)
   }
 
-  async getPosts() {
+  async getPosts(account) {
     await this.connect();
 
     if (this.ig) {
-      const response = await this.ig.fetchUserPostsV2('memellin02');
-      return this.savePosts(response)
+      try {
+        const response = await this.ig.fetchUserPostsV2(account);
+        return this.savePosts(account, response)
+      } catch(e) {
+        this.logger.error(e);
+        return e;
+      }
     }
   }
 
@@ -56,7 +61,6 @@ export class InstagramApiService {
         display_url: post.display_url,
         taken_at_timestamp: post.taken_at_timestamp,
         product_type: post.product_type,
-        posted: false,
         media: post.edge_sidecar_to_children
           ? post.edge_sidecar_to_children.edges.map(({node}) => node.display_url)
           : [],
@@ -66,10 +70,11 @@ export class InstagramApiService {
     })
   }
 
-  async savePosts(posts: IPaginatedPosts) {
+  async savePosts(account, posts: IPaginatedPosts) {
+    console.log(account);
     try {
       const updatedPosts = this.proceedPosts(posts);
-      const response = await this.instagramDBService.setPosts(updatedPosts)
+      const response = await this.instagramDBService.setPosts(account, updatedPosts)
       this.logger.debug('POSTS WERE UPDATED')
       return updatedPosts;
     } catch (error) {

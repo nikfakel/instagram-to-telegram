@@ -59,27 +59,40 @@ export class FirebaseService {
     }
   }
 
-  async saveInstagramPosts(posts) {
+  async saveInstagramPosts(account, posts) {
     try {
       const batch = this.db.batch();
 
       posts.forEach(post => {
-        const docRef = this.db.collection('posts').doc(post.id);
-        this.logger.debug(post.id, docRef)
+        const docRef = this.db
+          .collection('instagram')
+          .doc(account)
+          .collection('posts')
+          .doc(post.id);
         batch.set(docRef, post);
       });
 
       const writes = await batch.commit();
-      this.logger.debug(writes);
     } catch(e) {
       this.logger.error(e);
     }
   }
 
-  async getInstagramPost() {
+  async getInstagramPost(user, instagram) {
     try {
-      const snapshot = await this.db.collection('posts')
-        .where('posted', '==', false)
+      const userChannelData = await this.db
+        .collection('users')
+        .doc(user.id)
+        .get();
+
+      const userChannel = userChannelData.data();
+      const lastPostTimestamp = userChannel.posted[instagram].postedTimestamp
+
+      const snapshot = await this.db
+        .collection('instagram')
+        .doc(userChannel.instagram[0])
+        .collection('posts')
+        .where('taken_at_timestamp', '>', lastPostTimestamp)
         .orderBy('taken_at_timestamp', 'asc')
         .limit(1)
         .get();
@@ -95,10 +108,14 @@ export class FirebaseService {
     }
   }
 
-  async setPosted({ postId, postedTimestamp, linkToTelegramMessage, linkToTelegramChat }) {
+  async setPosted({ instagram, user, postId, postedTimestamp, linkToTelegramMessage, linkToTelegramChat }) {
     try {
-      return await this.db.collection('posts').doc(postId)
-        .update({posted: true, postedTimestamp, linkToTelegramMessage, linkToTelegramChat});
+      return await this.db
+        .collection('users')
+        .doc(user.id)
+        .update({ posted: {
+          [instagram]: { postId, postedTimestamp, linkToTelegramMessage, linkToTelegramChat }
+        }});
     } catch(e) {
       this.logger.error(e);
     }

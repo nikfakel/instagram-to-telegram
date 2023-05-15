@@ -26,9 +26,10 @@ export class InstagramDBService {
     }
   }
 
-  async setPosts(posts: InstagramPostType[]) {
+  async setPosts(account, posts: InstagramPostType[]) {
     try {
-      this.firebaseService.saveInstagramPosts(posts);
+      console.log(account);
+      this.firebaseService.saveInstagramPosts(account, posts);
     } catch(e) {
       this.logger.error(e)
     }

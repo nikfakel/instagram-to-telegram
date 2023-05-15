@@ -32,7 +32,11 @@ export class TelegramSendMessagesService {
 
   async getPost() {
     try {
-      return await this.firebaseServise.getInstagramPost();
+      return await this.firebaseServise.getInstagramPost({
+        channel: 'rihannaofficiall',
+        id: '12312893818',
+        lastPostTimestamp: '11',
+      }, 'rihanna');
     } catch (error) {
       this.logger.error(error)
     }

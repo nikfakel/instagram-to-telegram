@@ -1,41 +1,49 @@
 import {Controller, Logger} from '@nestjs/common';
 import { Telegraf } from 'telegraf';
 import { message } from 'telegraf/filters';
+const EventSource =  require('eventsource');
 
+console.log(EventSource);
 @Controller('telegram-bot')
 export class TelegramBotController {
   private readonly logger: Logger = new Logger(TelegramBotController.name);
-  private bot: Telegraf;
+  private bot: Telegraf = null;
 
   constructor() {
-    // this.initialize();
+    console.log(this.bot);
+    if (!this.bot) {
+      // this.initialize();
+    }
   }
 
-  initialize() {
+  async initialize() {
+    const eventSourceInit = { headers: {"Authorization": "Bearer 0136d3c3d4b3d23a355cfec7d0810be3", } }
+    const es = new EventSource("https://api.pipedream.com/sources/dc_eKu1qQ2/sse", eventSourceInit);
+
+    console.log("Listening to SSE stream at https://api.pipedream.com/sources/dc_eKu1qQ2/sse\n");
+
+    es.onmessage = event => {
+      console.log(event.data);
+    }
+
     this.bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 
-    this.applyCommands()
-
-    const { SERVER_URL: serverUrl, WEBHOOKS_URI: webhooksUri } = process.env;
+    this.applyCommands();
+    this.stopBotOnAppStop();
 
     console.log(this.bot.secretPathComponent());
 
-    this.bot.launch({
-      webhook: {
-        domain: serverUrl,
+    this.bot.command('/bit', (a) => {
+      console.log('bit');
+      console.log(a);
+    })
 
-        // Port to listen on; e.g.: 8080
-        port: 443,
+    this.bot.telegram.setMyCommands([
+      { command: "Add instagram", description: "Set new instagram account for parsing" },
+      { command: "Add instagrams", description: "Set new instagram account for parsings" },
+    ]);
 
-        // Optional path to listen for.
-        // `bot.secretPathComponent()` will be used by default
-        hookPath: 'tghooks',
-
-        // Optional secret to be sent back in a header for security.
-        // e.g.: `crypto.randomBytes(64).toString("hex")`
-        secretToken: '123123',
-      },
-    });
+    this.bot.launch();
   }
 
   applyCommands() {
@@ -47,8 +55,14 @@ export class TelegramBotController {
   }
 
   stopBotOnAppStop() {
-    process.once('SIGINT', () => this.bot.stop('SIGINT'));
-    process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
+    process.once('SIGINT', () => {
+      console.log('bot stopped SIGINT');
+      this.bot.stop('SIGINT')
+    });
+    process.once('SIGTERM', () => {
+      console.log('bot stopped SIGTERM');
+      this.bot.stop('SIGTERM')
+    });
   }
 
   onStart() {
@@ -56,7 +70,7 @@ export class TelegramBotController {
       const getChat = await ctx.getChat(); // get user data
       this.saveUser(getChat)
 
-      ctx.reply(`Welcome! I am InstaParser Bot!
+      ctx.reply(`Welcome! I am InstaParser Bot!!!!!
       I can parse instagram posts and reels and post them into your channel.
       `)
 
@@ -67,5 +81,6 @@ export class TelegramBotController {
 
   saveUser(getChat) {
     const { id, first_name: firstName, last_name: lastName, username, type, active_usernames: activeUsernames} = getChat;
+    console.log(firstName);
   }
 }

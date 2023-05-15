@@ -1,7 +1,9 @@
-import {Controller, Get, Logger} from "@nestjs/common";
+import {Body, Controller, Get, Logger, Param, Query} from "@nestjs/common";
 import {InstagramApiService} from "./instagram-api.service";
 import {Cron} from "@nestjs/schedule";
 import {isProduction} from "../helpers/node-env";
+import {InstagramDBService} from "./instagram-db.service";
+import {FirebaseService} from "../services/firebase.service";
 
 @Controller()
 export class InstagramController {
@@ -9,8 +11,19 @@ export class InstagramController {
 
   constructor(
     private readonly instagramApiService: InstagramApiService,
+    private readonly instagramDBService: InstagramDBService,
+    private readonly firebaseService: FirebaseService,
   ) {
     // this.getPosts();
+  }
+
+  @Get('test')
+  async getDB(){
+    return this.firebaseService.getInstagramPost({
+      channel: 'rihannaofficiall',
+      id: '12312893818',
+      lastPostTimestamp: '11',
+    }, 'rihanna')
   }
 
   // cron doesnt work on my server automatically
@@ -18,7 +31,7 @@ export class InstagramController {
   async getPosts() {
     try {
       if (isProduction()) {
-        return this.instagramApiService.getPosts();
+        // return this.instagramApiService.getPosts();
       } else {
         this.logger.debug('get posts')
       }
@@ -27,12 +40,12 @@ export class InstagramController {
     }
   }
 
-
-
   @Get('get-posts')
-  async getPostsManual() {
+  async getPostsManual(@Query() query: { [key: string]: string }) {
+    console.log(query);
+    console.log(query.account);
     try {
-      const response = await this.instagramApiService.getPosts();
+      const response = await this.instagramApiService.getPosts(query.account);
       this.logger.debug('getPostsManual in InstagramController');
       this.logger.debug(response);
       return response;

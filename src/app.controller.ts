@@ -15,9 +15,4 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
-
-  @Get('test')
-  getPost() {
-    return this.firebaseService.getInstagramPost();
-  }
 }
