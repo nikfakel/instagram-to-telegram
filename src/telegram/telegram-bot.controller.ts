@@ -38,7 +38,8 @@ export class TelegramBotController {
 
   applyCommands() {
     this.onStart();
-    this.onAddInstagram()
+    this.onAddParser();
+    this.onGetParsers();
     this.onPressSaveButton();
 
     this.bot.help((ctx) => ctx.reply('Send me a help'));
@@ -66,34 +67,47 @@ export class TelegramBotController {
     });
   }
 
-  onAddInstagram() {
-    this.bot.command('addinstagram', (ctx) => {
-      this.checkAddInstagram(ctx);
+  onAddParser() {
+    this.bot.command('addparser', (ctx) => {
+      const words = ctx.message.text.split(' ');
+
+      if (words.length === 3 && words[0] === '/addparser') {
+        const instaLink = `https://www.instagram.com/${words[1]}/`;
+        const channelLink = `https://t.me/${words[2]}`;
+
+        ctx.reply(instaLink)
+        ctx.reply(channelLink)
+
+        const data = JSON.stringify({c: 'save_changes', i: words[1], ch: words[2] })
+        return ctx.reply('Check this links. If it\'s correct, press <b>Save</b> button', {
+          parse_mode: 'HTML',
+          ...Markup.inlineKeyboard([
+            Markup.button.callback('Save', data),
+          ])
+        })
+      } else {
+        ctx.reply(`Wrong command usage. Please use command /addinstagram as this: 
+        /addinstagram instagram_account telegram_channel
+      `)
+      }
     })
   }
 
-  checkAddInstagram(ctx) {
-    const words = ctx.message.text.split(' ');
+  onGetParsers() {
+    this.bot.command('getactiveparsers', async (ctx) => {
+      try {
+        ctx.reply('Load parsers list')
+        console.log(ctx.message.from);
+        const activeParsers = await this.firebaseService.getActiveParsers(ctx.message.from.id);
+        console.log(activeParsers);
 
-    if (words.length === 3 && words[0] === '/addinstagram') {
-      const instaLink = `https://www.instagram.com/${words[1]}/`;
-      const channelLink = `https://t.me/${words[2]}`;
-
-      ctx.reply(instaLink)
-      ctx.reply(channelLink)
-
-      const data = JSON.stringify({c: 'save_changes', i: words[1], ch: words[2] })
-      return ctx.reply('Check this links. If it\'s correct, press <b>Save</b> button', {
-        parse_mode: 'HTML',
-        ...Markup.inlineKeyboard([
-          Markup.button.callback('Save', data),
-        ])
-      })
-    } else {
-      ctx.reply(`Wrong command usage. Please use command /addinstagram as this: 
-        /addinstagram instagram_account telegram_channel
-      `)
-    }
+        ctx.reply(`Your active parsers:
+${activeParsers.map(parser => `${parser.channel} with instagram ${parser.instagram}`)}
+`)
+      } catch(e) {
+        this.logger.error(e);
+      }
+    });
   }
 
   stopBotOnAppStop() {
@@ -108,8 +122,11 @@ export class TelegramBotController {
   }
 
   setCommands() {
-    this.bot.telegram.setMyCommands([
-      { command: "addinstagram", description: "Set new instagram account for parsing" },
+    this.bot.telegram.setMyCommands([{
+      command: "addparser", description: "Set new instagram account for parsing",
+    },{
+      command: "getactiveparsers", description: "Get list of your active parsers",
+    },
     ]);
   }
 

@@ -180,4 +180,17 @@ export class FirebaseService {
       return 'Channel already exists'
     }
   }
+
+  async getActiveParsers(userId) {
+    try {
+      const userDataSnapshot = await this.db.collection('users').doc(String(userId)).get();
+      const user = userDataSnapshot.data();
+
+      return Object.entries(user.instagram)
+        .filter(([key, value]) => value.isStopped === false)
+        .map(([key, value]) => ({channel: key, instagram: value.instagram}))
+    } catch(e) {
+      this.logger.error(e)
+    }
+  }
 }
