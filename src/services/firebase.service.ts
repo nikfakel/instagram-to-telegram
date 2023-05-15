@@ -218,4 +218,14 @@ export class FirebaseService {
       this.logger.error(e)
     }
   }
+
+  async getUsers() {
+    try {
+      const usersSnapshot = await this.db.collection('users').get();
+      const users = usersSnapshot.docs.map((doc) => doc.data()) as TUser[];
+      return users;
+    } catch(e) {
+      this.logger.error(e)
+    }
+  }
 }

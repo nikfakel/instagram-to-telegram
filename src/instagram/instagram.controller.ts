@@ -1,5 +1,6 @@
-import {Controller, Get, Logger, Query} from "@nestjs/common";
+import {Controller, Get, Logger, Post, Query} from "@nestjs/common";
 import {InstagramApiService} from "./instagram-api.service";
+import {FirebaseService} from "../services/firebase.service";
 
 @Controller()
 export class InstagramController {
@@ -7,6 +8,7 @@ export class InstagramController {
 
   constructor(
     private readonly instagramApiService: InstagramApiService,
+    private readonly firebaseService: FirebaseService,
   ) {}
 
   @Get('inst-auth')
@@ -40,6 +42,16 @@ export class InstagramController {
       return 'Posts removed'
     } catch(e) {
       this.logger.error(e)
+    }
+  }
+
+
+  @Post('get-users')
+  async getUsers() {
+    try {
+      return this.firebaseService.getUsers();
+    } catch(e) {
+      this.logger.error(e);
     }
   }
 }

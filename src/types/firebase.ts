@@ -1,3 +1,13 @@
+export type TParser = {
+  instagram: string;
+  startedAt: number;
+  isStopped: boolean;
+  takenAtTimestamp: number;
+  linkToTelegramChat: string;
+  linkToTelegramMessage: string;
+  postedTimestamp: number;
+}
+
 export type TUser = {
   id: number;
   username?: string;
@@ -5,14 +15,6 @@ export type TUser = {
   lastName?: string;
   type: 'private';
   parsers?: {
-    [key: string]: {
-      instagram: string;
-      startedAt: number;
-      isStopped: boolean;
-      takenAtTimestamp: number;
-      linkToTelegramChat: string;
-      linkToTelegramMessage: string;
-      postedTimestamp: number;
-    }
+    [key: string]: TParser
   }
 }
