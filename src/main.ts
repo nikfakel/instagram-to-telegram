@@ -1,5 +1,8 @@
 declare const module: any;
 
+import * as sourceMapSupport from 'source-map-support';
+sourceMapSupport.install();
+
 import * as dotenv from 'dotenv';
 dotenv.config();
 

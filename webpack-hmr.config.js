@@ -4,6 +4,7 @@ const { RunScriptWebpackPlugin } = require('run-script-webpack-plugin');
 module.exports = function (options, webpack) {
   return {
     ...options,
+    devtool: 'inline-source-map',
     entry: ['webpack/hot/poll?100', options.entry],
     externals: [
       nodeExternals({
