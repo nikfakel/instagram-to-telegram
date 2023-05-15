@@ -2,6 +2,7 @@ import {Controller, Get, Logger, Post} from "@nestjs/common";
 import {TelegramSendMessagesService} from "./telegram-send-message.service";
 import {Cron} from "@nestjs/schedule";
 import {isProduction} from "../helpers/node-env";
+import {FirebaseService} from "../services/firebase.service";
 
 @Controller()
 export class TelegramController {
@@ -9,25 +10,19 @@ export class TelegramController {
 
   constructor(
     private readonly telegramSendMessageService: TelegramSendMessagesService,
-  ) {
-    // this.telegramSendMessageService.sendPost();
-  }
+    private readonly firebaseService: FirebaseService
+  ) {}
 
-  // cron doesnt work on my server automatically
-  // @Cron('0 */1 * * * *')
-  async sendPost() {
+  @Get('save-channel')
+  async saveChanges() {
     try {
-      this.logger.debug('isProduction() in TelegramController');
-      this.logger.debug(isProduction())
-      if (isProduction()) {
-        this.telegramSendMessageService.sendPost({
-          id: 12312893818
-        });
-      } else {
-        this.logger.debug('sendPost') // skipp sending posts in dev mode
-      }
-    } catch (e) {
-      this.logger.error(e);
+      return this.firebaseService.saveNewChannel({
+        userId: '246047689',
+        channel: 'other_channel',
+        instagram: 'memellin02'
+      });
+    } catch(e) {
+      return this.logger.error(e)
     }
   }
 
