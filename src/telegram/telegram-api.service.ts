@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import {TelegramMethod, TelegramSuccessResponse} from '../types/telegram';
 import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from 'axios';
+import {Message} from "typegram";
 
 @Injectable()
 export class TelegramApiService {
@@ -13,8 +14,8 @@ export class TelegramApiService {
 
   async sendRequest(
     method: TelegramMethod,
-    data,
-  ): Promise<AxiosResponse<TelegramSuccessResponse>> {
+    data: { [key: string]: string | number },
+  ): Promise<AxiosResponse<TelegramSuccessResponse> | undefined> {
     try {
       const response = await this.httpService.axiosRef.post(
         `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/${method}`,

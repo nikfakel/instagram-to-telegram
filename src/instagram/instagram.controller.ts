@@ -1,9 +1,5 @@
-import {Body, Controller, Get, Logger, Param, Query} from "@nestjs/common";
+import {Controller, Get, Logger, Query} from "@nestjs/common";
 import {InstagramApiService} from "./instagram-api.service";
-import {Cron} from "@nestjs/schedule";
-import {isProduction} from "../helpers/node-env";
-import {InstagramDBService} from "./instagram-db.service";
-import {FirebaseService} from "../services/firebase.service";
 
 @Controller()
 export class InstagramController {
@@ -11,8 +7,6 @@ export class InstagramController {
 
   constructor(
     private readonly instagramApiService: InstagramApiService,
-    private readonly instagramDBService: InstagramDBService,
-    private readonly firebaseService: FirebaseService,
   ) {}
 
   @Get('get-posts')

@@ -1,6 +1,8 @@
 import {Injectable, Logger} from '@nestjs/common';
 import * as firebaseAdmin from 'firebase-admin';
-import {InstagramPost, InstagramSession} from "../types/instagram";
+import {InstagramSession, TInstagramPost} from "../types/instagram";
+import {TUser} from "../types/firebase";
+import {TSetPosted} from "../types/telegram";
 
 @Injectable()
 export class FirebaseService {
@@ -21,7 +23,7 @@ export class FirebaseService {
       try {
         const serviceAccount = {
           projectId: process.env.PROJECT_ID,
-          privateKey: process.env.PRIVATE_KEY.replace(/\\n/g, '\n'),
+          privateKey: process.env.PRIVATE_KEY?.replace(/\\n/g, '\n'),
           clientEmail: process.env.CLIENT_EMAIL,
         }
         this.app = firebaseAdmin.initializeApp({
@@ -49,7 +51,7 @@ export class FirebaseService {
     }
   }
 
-  async setInstagramSession(id, timestamp) {
+  async setInstagramSession(id: string, timestamp: number) {
     try {
       await this.db.collection('sessionId').doc('id').update({
         id, timestamp
@@ -59,7 +61,7 @@ export class FirebaseService {
     }
   }
 
-  async saveInstagramPosts(account, posts) {
+  async saveInstagramPosts(account: string, posts: TInstagramPost[]) {
     try {
       const batch = this.db.batch();
 
@@ -78,19 +80,23 @@ export class FirebaseService {
     }
   }
 
-  async getInstagramPost(userId) {
+  async getInstagramPost(userId: number, channel: string) {
     try {
       const userData = await this.db
         .collection('users')
-        .doc(userId)
+        .doc(String(userId))
         .get();
 
-      const user = userData.data();
-      const lastPostTimestamp = user.posted[user.instagram[0]].takenAtTimestamp;
+      const user = userData.data() as TUser;
+      const lastPostTimestamp = user?.instagram?.[`${channel}`].takenAtTimestamp;
+      const instagramAccount = user?.instagram?.[`${channel}`].instagram;
+      if (!lastPostTimestamp || !instagramAccount) {
+        throw new Error('Something went wrong in db (getInstagramPost)')
+      }
 
       const snapshot = await this.db
         .collection('instagram')
-        .doc(user.instagram[0])
+        .doc(instagramAccount)
         .collection('posts')
         .where('taken_at_timestamp', '>', lastPostTimestamp)
         .orderBy('taken_at_timestamp', 'asc')
@@ -106,7 +112,7 @@ export class FirebaseService {
       } else {
         return {
           user,
-          post: snapshot.docs.map((item) => item.data())[0] as InstagramPost
+          post: snapshot.docs.map((item) => item.data())[0] as TInstagramPost
         }
       }
     } catch(e) {
@@ -114,24 +120,25 @@ export class FirebaseService {
     }
   }
 
-  async setPosted(
-    {
-      instagram,
-      user,
-      postId,
-      takenAtTimestamp,
-      postedTimestamp,
-      linkToTelegramMessage,
-      linkToTelegramChat
-    }) {
+  async setPosted({
+                    channel,
+                    user,
+                    data,
+                    linkToTelegramMessage,
+                    linkToTelegramChat
+                  }: TSetPosted) {
 
     try {
       return await this.db
         .collection('users')
-        .doc(user.id)
-        .update({ [`posted.${instagram}`]: {
-           postId, takenAtTimestamp, postedTimestamp, linkToTelegramMessage, linkToTelegramChat
-        }});
+        .doc(String(user.id))
+        .update({ [`posted.${channel}`]: {
+            postId: data.id,
+            takenAtTimestamp: data.takenAtTimestamp,
+            linkToTelegramMessage,
+            linkToTelegramChat,
+            postedTimestamp: Date.now(),
+          }});
     } catch(e) {
       this.logger.error(e);
       return e;
@@ -150,7 +157,7 @@ export class FirebaseService {
     }
   }
 
-  async saveUser(userData) {
+  async saveUser(userData: TUser) {
     try {
       const user = await this.db.collection('users').doc(String(userData.id)).get()
 
@@ -162,12 +169,12 @@ export class FirebaseService {
     }
   }
 
-  async saveNewChannel({ userId, channel, instagram }) {
-    const userDataSnapshot = await this.db.collection('users').doc(userId).get();
+  async saveNewChannel({ userId, channel, instagram }: { userId: number, channel: string, instagram: string }) {
+    const userDataSnapshot = await this.db.collection('users').doc(String(userId)).get();
     const userData = userDataSnapshot.data();
 
     if (userData && userData.instagram && !userData.instagram[channel]) {
-      await this.db.collection('users').doc(userId).update({
+      await this.db.collection('users').doc(String(userId)).update({
         [`instagram.${channel}`]: {
           instagram,
           startedAt: Date.now(),
@@ -181,14 +188,18 @@ export class FirebaseService {
     }
   }
 
-  async getActiveParsers(userId) {
+  async getActiveParsers(userId: number) {
     try {
       const userDataSnapshot = await this.db.collection('users').doc(String(userId)).get();
-      const user = userDataSnapshot.data();
+      const user = userDataSnapshot.data() as TUser;
 
-      return Object.entries(user.instagram)
-        .filter(([key, value]) => value.isStopped === false)
-        .map(([key, value]) => ({channel: key, instagram: value.instagram}))
+      if (user?.instagram) {
+        return Object.entries(user?.instagram)
+          .filter(([key, value]) => !value.isStopped)
+          .map(([key, value]) => ({channel: key, instagram: value.instagram}))
+      } else {
+        []
+      }
     } catch(e) {
       this.logger.error(e)
     }

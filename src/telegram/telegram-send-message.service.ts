@@ -1,8 +1,9 @@
 import {Injectable, Logger} from "@nestjs/common";
 import {TelegramApiService} from "./telegram-api.service";
-import {TelegramMethod} from "../types/telegram";
+import {TelegramMethod, TSetPosted, TTelegramPostToSend} from "../types/telegram";
 import {FirebaseService} from "../services/firebase.service";
-import {InstagramPost} from "../types/instagram";
+import {TInstagramPost} from "../types/instagram";
+import {TUser} from "../types/firebase";
 
 @Injectable()
 export class TelegramSendMessagesService {
@@ -13,14 +14,14 @@ export class TelegramSendMessagesService {
     private readonly firebaseServise: FirebaseService,
     ) {}
 
-  async sendPost(userId) {
+  async sendPost(userId: number, channel: string) {
     try {
-      const {user, post} = await this.getPost(userId)
+      const data = await this.getPost(userId, channel)
 
-      if (user && post) {
-        this.sendRequest(user, post);
+      if (data && data.user && data.post) {
+        this.sendRequest(data.user, channel, data.post);
 
-        return post
+        return data.post
       } else {
         return 'New post not found'
       }
@@ -30,15 +31,15 @@ export class TelegramSendMessagesService {
     }
   }
 
-  async getPost(userId) {
+  async getPost(userId: number, channel: string) {
     try {
-      return await this.firebaseServise.getInstagramPost(userId);
+      return await this.firebaseServise.getInstagramPost(userId, channel);
     } catch (error) {
       this.logger.error(error)
     }
   }
 
-  async sendRequest(user, post) {
+  async sendRequest(user: TUser, channel: string, post: TInstagramPost) {
     const { data, header } = this.createMessage(post);
     try {
       const response = await this.telegramApiService.sendRequest(header, {
@@ -46,19 +47,21 @@ export class TelegramSendMessagesService {
         ...data,
       });
 
-      if (response.data.ok) {
-        const chatId = Array.isArray(response.data.result)
+      if (response?.data.ok) {
+        const linkToTelegramChat = Array.isArray(response.data.result)
           ? response.data.result[0].chat.id
           : response.data.result.chat.id;
 
+        const linkToTelegramMessage = Array.isArray(response.data.result) ?
+          response.data.result[0].message_id
+          : response.data.result.message_id
+
         return this.setPosted({
-          instagram: user.instagram[0],
-          user: user,
-          postId: data.id,
-          postedTimestamp: Date.now(),
-          linkToTelegramMessage: response.data.result.message_id,
-          linkToTelegramChat: chatId,
-          takenAtTimestamp: data.takenAtTimestamp
+          channel,
+          user,
+          data,
+          linkToTelegramMessage,
+          linkToTelegramChat,
         })
       }
     } catch (e) {
@@ -67,18 +70,11 @@ export class TelegramSendMessagesService {
     }
   }
 
-  createMessage(post: InstagramPost) {
-    let data: {
-      id: string;
-      media?: string;
-      photo?: string;
-      video?: string;
-      caption?: string;
-      takenAtTimestamp?: number;
-    } = {
+  createMessage(post: TInstagramPost) {
+    let data: TTelegramPostToSend = {
       id: post.id,
       caption: post.caption,
-      takenAtTimestamp: post.taken_at_timestamp
+      takenAtTimestamp: post.taken_at_timestamp,
     };
     let header = undefined;
     let media = [];
@@ -106,7 +102,7 @@ export class TelegramSendMessagesService {
     return { data, header }
   }
 
-  async setPosted(messageData) {
+  async setPosted(messageData: TSetPosted) {
     try {
       return await this.firebaseServise.setPosted(messageData)
     } catch(e) {

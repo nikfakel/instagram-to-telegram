@@ -1,5 +1,5 @@
 import {Injectable, Logger} from "@nestjs/common";
-import {InstagramPost as InstagramPostType} from "../types/instagram";
+import {TInstagramPost} from "../types/instagram";
 import {FirebaseService} from "../services/firebase.service";
 
 @Injectable()
@@ -10,7 +10,7 @@ export class InstagramDBService {
     private readonly firebaseService: FirebaseService
   ) {}
 
-  async setSessionId(id, timestamp) {
+  async setSessionId(id: string, timestamp: number) {
     try {
       this.firebaseService.setInstagramSession(id, timestamp);
     } catch(e) {
@@ -26,9 +26,9 @@ export class InstagramDBService {
     }
   }
 
-  async setPosts(account, posts: InstagramPostType[]) {
+  async setPosts(instagramAccount: string, posts: TInstagramPost[]) {
     try {
-      this.firebaseService.saveInstagramPosts(account, posts);
+      this.firebaseService.saveInstagramPosts(instagramAccount, posts);
     } catch(e) {
       this.logger.error(e)
     }

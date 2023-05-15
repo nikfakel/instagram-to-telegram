@@ -1,8 +1,8 @@
 import {Controller, Get, Logger, Post} from "@nestjs/common";
 import {TelegramSendMessagesService} from "./telegram-send-message.service";
-import {Cron} from "@nestjs/schedule";
 import {isProduction} from "../helpers/node-env";
 import {FirebaseService} from "../services/firebase.service";
+import {Update} from "typegram";
 
 @Controller()
 export class TelegramController {
@@ -17,7 +17,7 @@ export class TelegramController {
   async saveChanges() {
     try {
       return this.firebaseService.saveNewChannel({
-        userId: '246047689',
+        userId: 246047689,
         channel: 'other_channel',
         instagram: 'memellin02'
       });
@@ -29,9 +29,7 @@ export class TelegramController {
   @Get('get-post')
   async getNextPost() {
     try {
-      const response = this.telegramSendMessageService.getPost({
-        id: 12312893818
-      });
+      const response = this.telegramSendMessageService.getPost(12312893818, 'other_channel');
     } catch(e) {
       this.logger.error(e);
     }
@@ -40,14 +38,14 @@ export class TelegramController {
   @Get('send-post')
   async sendPostManual() {
     try {
-      return this.telegramSendMessageService.sendPost("12312893818");
+      return this.telegramSendMessageService.sendPost(12312893818, 'other_channel');
     } catch(e) {
       this.logger.error(e)
     }
   }
 
   @Post(process.env.WEBHOOKS_URI)
-  async onTelegramWebhook(update, token) {
+  async onTelegramWebhook(update: Update, token: string) {
     this.logger.debug('onTelegramWebhook')
     this.logger.debug(update);
     this.logger.debug(token);

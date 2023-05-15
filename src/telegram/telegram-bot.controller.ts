@@ -3,12 +3,14 @@ import { Telegraf,Markup  } from 'telegraf';
 import {callbackQuery, message} from 'telegraf/filters';
 import {FirebaseService} from "../services/firebase.service";
 import {TelegramApiService} from "./telegram-api.service";
+import {Chat} from "typegram";
+import PrivateGetChat = Chat.PrivateGetChat;
 const EventSource =  require('eventsource');
 
 @Controller('telegram-bot')
 export class TelegramBotController {
   private readonly logger: Logger = new Logger(TelegramBotController.name);
-  private bot: Telegraf = null;
+  private bot: Telegraf;
 
   constructor(
     private readonly firebaseService: FirebaseService,
@@ -97,15 +99,17 @@ export class TelegramBotController {
     this.bot.command('getactiveparsers', async (ctx) => {
       try {
         ctx.reply('Load parsers list')
-        console.log(ctx.message.from);
         const activeParsers = await this.firebaseService.getActiveParsers(ctx.message.from.id);
-        console.log(activeParsers);
-
-        ctx.reply(`Your active parsers:
+        if (activeParsers && activeParsers.length > 0) {
+          ctx.reply(`Your active parsers:
 ${activeParsers.map(parser => `${parser.channel} with instagram ${parser.instagram}`)}
 `)
+        } else {
+          ctx.reply(`You dont have active parsers`)
+        }
       } catch(e) {
         this.logger.error(e);
+        ctx.reply('Something went wrong')
       }
     });
   }
@@ -132,19 +136,18 @@ ${activeParsers.map(parser => `${parser.channel} with instagram ${parser.instagr
 
   onStart() {
     this.bot.start(async ctx => {
-      const getChat = await ctx.getChat(); // get user data
+      const getChat = await ctx.getChat() as PrivateGetChat; // get user data
       this.saveUser(getChat)
 
-      ctx.reply(`Welcome! I am InstaParser Bot!!!!!
-      I can parse instagram posts and reels and post them into your channel.
-      `)
+      ctx.reply(`Welcome! I am InstaParser Bot.
+I can parse instagram posts and reels and post them into your channel.`)
 
       ctx.reply(`Add me to your group with admin rights and tell me instagram account which you want to parse.
-      Format: https://www.instagram.com/rihannaofficiall/ or rihannaofficiall`)
+Format: rihannaofficiall`)
     });
   }
 
-  saveUser(getChat) {
+  saveUser(getChat: PrivateGetChat) {
     const {
       id,
       first_name: firstName,

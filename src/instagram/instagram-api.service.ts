@@ -1,7 +1,7 @@
 import {Injectable, Logger} from "@nestjs/common";
 import {igApi, getCookie} from "insta-fetcher";
 import {InstagramDBService} from "./instagram-db.service";
-import {InstagramPost} from "../types/instagram";
+import {TInstagramPost} from "../types/instagram";
 import {IPaginatedPosts} from "insta-fetcher/dist/types/PaginatedPosts";
 
 @Injectable()
@@ -31,19 +31,22 @@ export class InstagramApiService {
   async setSessionId() {
     const instagramLogin = process.env.INSTAGRAM_LOGIN;
     const instagramPassword = process.env.INSTAGRAM_PASSWORD;
-    const newSessionId = await getCookie(instagramLogin, instagramPassword);
+    if (!instagramLogin || !instagramPassword) {
+      throw new Error('Env variables are not exist')
+    }
+    const newSessionId = await getCookie(instagramLogin, instagramPassword) as string;
     const timestamp = Date.now();
 
     await this.instagramDBService.setSessionId(newSessionId, timestamp)
   }
 
-  async getPosts(account) {
+  async getPosts(instagramAccount: string) {
     await this.connect();
 
     if (this.ig) {
       try {
-        const response = await this.ig.fetchUserPostsV2(account);
-        return this.savePosts(account, response)
+        const response = await this.ig.fetchUserPostsV2(instagramAccount);
+        return this.savePosts(instagramAccount, response)
       } catch(e) {
         this.logger.error(e);
         return e;
@@ -51,7 +54,7 @@ export class InstagramApiService {
     }
   }
 
-  proceedPosts(paginatedPosts: IPaginatedPosts ): InstagramPost[] {
+  proceedPosts(paginatedPosts: IPaginatedPosts ): TInstagramPost[] {
     return paginatedPosts.edges.map(({ node: post }) => {
       return {
         id: post.id,
@@ -66,14 +69,15 @@ export class InstagramApiService {
           : [],
         ...post?.edge_media_to_caption?.edges[0]?.node?.text && {
           caption: post.edge_media_to_caption.edges[0].node.text},
+          text: post.edge_media_to_caption.edges[0].node.text || '',
       }
     })
   }
 
-  async savePosts(account, posts: IPaginatedPosts) {
+  async savePosts(instagramAccount: string, posts: IPaginatedPosts) {
     try {
       const updatedPosts = this.proceedPosts(posts);
-      const response = await this.instagramDBService.setPosts(account, updatedPosts)
+      const response = await this.instagramDBService.setPosts(instagramAccount, updatedPosts)
       this.logger.debug('POSTS WERE UPDATED')
       return updatedPosts;
     } catch (error) {
