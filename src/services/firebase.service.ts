@@ -88,8 +88,8 @@ export class FirebaseService {
         .get();
 
       const user = userData.data() as TUser;
-      const lastPostTimestamp = user?.instagram?.[`${channel}`].takenAtTimestamp || 1;
-      const instagramAccount = user?.instagram?.[`${channel}`].instagram;
+      const lastPostTimestamp = user?.parsers?.[channel].takenAtTimestamp;
+      const instagramAccount = user?.parsers?.[channel].instagram;
 
       if (!lastPostTimestamp || !instagramAccount) {
         throw new Error('Something went wrong in db (getInstagramPost)')
@@ -129,17 +129,26 @@ export class FirebaseService {
                     linkToTelegramChat
                   }: TSetPosted) {
 
+    console.log(channel,
+      user,
+      data,
+      linkToTelegramMessage,
+      linkToTelegramChat);
+
     try {
-      return await this.db
+      const resp = await this.db
         .collection('users')
         .doc(String(user.id))
-        .update({ [`posted.${channel}`]: {
+        .update({ [`instagram.${channel}`]: {
             postId: data.id,
             takenAtTimestamp: data.takenAtTimestamp,
             linkToTelegramMessage,
             linkToTelegramChat,
             postedTimestamp: Date.now(),
           }});
+
+      console.log(resp);
+
     } catch(e) {
       this.logger.error(e);
       return e;
@@ -194,8 +203,8 @@ export class FirebaseService {
       const userDataSnapshot = await this.db.collection('users').doc(String(userId)).get();
       const user = userDataSnapshot.data() as TUser;
 
-      if (user?.instagram) {
-        return Object.entries(user?.instagram)
+      if (user?.parsers) {
+        return Object.entries(user?.parsers)
           .filter(([key, value]) => !value.isStopped)
           .map(([key, value]) => ({channel: key, instagram: value.instagram}))
       } else {

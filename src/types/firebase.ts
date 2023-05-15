@@ -4,7 +4,7 @@ export type TUser = {
   firstName?: string;
   lastName?: string;
   type: 'private';
-  instagram?: {
+  parsers?: {
     [key: string]: {
       instagram: string;
       startedAt: number;
