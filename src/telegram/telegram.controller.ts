@@ -29,7 +29,7 @@ export class TelegramController {
   @Get('get-post')
   async getNextPost() {
     try {
-      const response = this.telegramSendMessageService.getPost(12312893818, 'other_channel');
+      return await this.telegramSendMessageService.getPost(246047689, 'other_channel');
     } catch(e) {
       this.logger.error(e);
     }
@@ -38,7 +38,7 @@ export class TelegramController {
   @Get('send-post')
   async sendPostManual() {
     try {
-      return this.telegramSendMessageService.sendPost(12312893818, 'other_channel');
+      return this.telegramSendMessageService.sendPost(246047689, 'other_channel');
     } catch(e) {
       this.logger.error(e)
     }

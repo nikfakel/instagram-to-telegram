@@ -88,8 +88,9 @@ export class FirebaseService {
         .get();
 
       const user = userData.data() as TUser;
-      const lastPostTimestamp = user?.instagram?.[`${channel}`].takenAtTimestamp;
+      const lastPostTimestamp = user?.instagram?.[`${channel}`].takenAtTimestamp || 1;
       const instagramAccount = user?.instagram?.[`${channel}`].instagram;
+
       if (!lastPostTimestamp || !instagramAccount) {
         throw new Error('Something went wrong in db (getInstagramPost)')
       }
