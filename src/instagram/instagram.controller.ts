@@ -13,30 +13,7 @@ export class InstagramController {
     private readonly instagramApiService: InstagramApiService,
     private readonly instagramDBService: InstagramDBService,
     private readonly firebaseService: FirebaseService,
-  ) {
-    // this.getPosts();
-  }
-
-  @Get('test')
-  async getDB(){
-    return this.firebaseService.getInstagramPost({
-      id: '12312893818',
-    })
-  }
-
-  // cron doesnt work on my server automatically
-  // @Cron('0 */30 * * * *')
-  async getPosts() {
-    try {
-      if (isProduction()) {
-        // return this.instagramApiService.getPosts();
-      } else {
-        this.logger.debug('get posts')
-      }
-    } catch(e) {
-      this.logger.error(e)
-    }
-  }
+  ) {}
 
   @Get('get-posts')
   async getPostsManual(@Query() query: { [key: string]: string }) {
