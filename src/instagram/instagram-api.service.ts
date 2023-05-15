@@ -29,15 +29,21 @@ export class InstagramApiService {
   }
 
   async setSessionId() {
-    const instagramLogin = process.env.INSTAGRAM_LOGIN;
-    const instagramPassword = process.env.INSTAGRAM_PASSWORD;
-    if (!instagramLogin || !instagramPassword) {
-      throw new Error('Env variables are not exist')
-    }
-    const newSessionId = await getCookie(instagramLogin, instagramPassword) as string;
-    const timestamp = Date.now();
+    try {
+      const instagramLogin = process.env.INSTAGRAM_LOGIN;
+      const instagramPassword = process.env.INSTAGRAM_PASSWORD;
+      if (!instagramLogin || !instagramPassword) {
+        throw new Error('Env variables are not exist')
+      }
+      const newSessionId = await getCookie(instagramLogin, instagramPassword) as string;
+      console.log(newSessionId);
 
-    await this.instagramDBService.setSessionId(newSessionId, timestamp)
+      const timestamp = Date.now();
+
+      await this.instagramDBService.setSessionId(newSessionId, timestamp)
+    } catch(e) {
+      console.log(e);
+    }
   }
 
   async getPosts(instagramAccount: string) {
