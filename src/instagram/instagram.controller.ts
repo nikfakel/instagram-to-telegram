@@ -43,5 +43,3 @@ export class InstagramController {
     }
   }
 }
-
-// sessionid=59577419748%3AbdtDsnI78TroeG%3A1%3AAYeqBhsMY4qTwAutxlXpB4rMmlZQDeKPFFPKULHesA; ds_user_id=59577419748; csrftoken=X5NerSxXf3OCB6Km43e4QynchLHTXU2V
