@@ -21,7 +21,7 @@ export const User = ({ user }: IProps) => {
       </div>
       <div className="sm:flex sm:flex-col">
         {user.parsers &&
-          <Parsers parsers={user.parsers}/>
+          <Parsers parsers={user.parsers} userId={user.id}/>
         }
       </div>
       <div className="hidden sm:flex sm:flex-col sm:items-end">

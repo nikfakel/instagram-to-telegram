@@ -44,8 +44,7 @@ export class InstagramController {
       this.logger.error(e)
     }
   }
-
-
+  
   @Post('get-users')
   async getUsers() {
     try {
