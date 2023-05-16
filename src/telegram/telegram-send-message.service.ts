@@ -22,8 +22,12 @@ export class TelegramSendMessagesService {
     try {
       const data = await this.getPost(userId, channel);
 
-      if (data && data.user && data.post) {
-        this.sendRequest(data.user, channel, data.post);
+      if (data instanceof Error) {
+        return 'Something went wrong';
+      }
+
+      if (data && data.user && data?.post) {
+        await this.sendRequest(data.user, channel, data.post);
 
         return data.post;
       } else {
