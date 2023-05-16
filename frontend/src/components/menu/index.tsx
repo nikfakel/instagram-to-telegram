@@ -1,22 +1,22 @@
-"use client"
+'use client';
 
-import Link from "next/link";
-import {Fragment} from "react";
-import { Disclosure, Menu, Transition } from '@headlessui/react'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import {usePathname} from "next/navigation";
+import Link from 'next/link';
+import { Fragment } from 'react';
+import { Disclosure, Menu, Transition } from '@headlessui/react';
+import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { usePathname } from 'next/navigation';
 
 const navigation = [
-  { name: 'Main', href: '/'},
-  { name: 'Users', href: '/users'},
-  { name: 'Parsers', href: '/parsers'},
-  { name: 'Instagram', href: '/instagram'},
-  { name: 'Telegram', href: '/telegram'},
-  { name: 'Deploy', href: '/deploy'},
-]
+  { name: 'Main', href: '/' },
+  { name: 'Users', href: '/users' },
+  { name: 'Parsers', href: '/parsers' },
+  { name: 'Instagram', href: '/instagram' },
+  { name: 'Telegram', href: '/telegram' },
+  { name: 'Deploy', href: '/deploy' },
+];
 
 function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ')
+  return classes.filter(Boolean).join(' ');
 }
 
 export const MainMenu = () => {
@@ -58,18 +58,21 @@ export const MainMenu = () => {
                       const isActive = pathname.startsWith(item.href);
 
                       return (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className={classNames(
-                          isActive ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                          'rounded-md px-3 py-2 text-sm font-medium'
-                        )}
-                        aria-current={isActive ? 'page' : undefined}
-                      >
-                        {item.name}
-                      </Link>
-                    )})}
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          className={classNames(
+                            isActive
+                              ? 'bg-gray-900 text-white'
+                              : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                            'rounded-md px-3 py-2 text-sm font-medium',
+                          )}
+                          aria-current={isActive ? 'page' : undefined}
+                        >
+                          {item.name}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -108,7 +111,10 @@ export const MainMenu = () => {
                         {({ active }) => (
                           <a
                             href="#"
-                            className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}
+                            className={classNames(
+                              active ? 'bg-gray-100' : '',
+                              'block px-4 py-2 text-sm text-gray-700',
+                            )}
                           >
                             Your Profile
                           </a>
@@ -118,7 +124,10 @@ export const MainMenu = () => {
                         {({ active }) => (
                           <a
                             href="#"
-                            className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}
+                            className={classNames(
+                              active ? 'bg-gray-100' : '',
+                              'block px-4 py-2 text-sm text-gray-700',
+                            )}
                           >
                             Settings
                           </a>
@@ -128,7 +137,10 @@ export const MainMenu = () => {
                         {({ active }) => (
                           <a
                             href="#"
-                            className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}
+                            className={classNames(
+                              active ? 'bg-gray-100' : '',
+                              'block px-4 py-2 text-sm text-gray-700',
+                            )}
                           >
                             Sign out
                           </a>
@@ -146,23 +158,26 @@ export const MainMenu = () => {
               {navigation.map((item) => {
                 const isActive = pathname.startsWith(item.href);
                 return (
-                <Disclosure.Button
-                  key={item.name}
-                  as="a"
-                  href={item.href}
-                  className={classNames(
-                    isActive ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                    'block rounded-md px-3 py-2 text-base font-medium'
-                  )}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  {item.name}
-                </Disclosure.Button>
-              )})}
+                  <Disclosure.Button
+                    key={item.name}
+                    as="a"
+                    href={item.href}
+                    className={classNames(
+                      isActive
+                        ? 'bg-gray-900 text-white'
+                        : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                      'block rounded-md px-3 py-2 text-base font-medium',
+                    )}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    {item.name}
+                  </Disclosure.Button>
+                );
+              })}
             </div>
           </Disclosure.Panel>
         </>
       )}
     </Disclosure>
-  )
-}
+  );
+};
