@@ -7,7 +7,7 @@ export const fetchData = async <T>(
   body?: { [key: string]: string },
 ): Promise<{ ok: boolean; data: T | null; error?: string }> => {
   try {
-    const response = await axios.post<T>(`${DOMAIN}/url`, body);
+    const response = await axios.post<T>(`${DOMAIN}/${url}`, body);
     const data = await response.data;
 
     return {
@@ -15,7 +15,6 @@ export const fetchData = async <T>(
       data,
     };
   } catch (e) {
-    console.log(e);
     return {
       ok: false,
       data: null,

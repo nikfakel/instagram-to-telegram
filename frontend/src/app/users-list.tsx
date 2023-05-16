@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import {TUser} from "../../../src/types/firebase";
-import {User} from "./user";
+import { TUser } from '../../../src/types/firebase';
+import { User } from './user';
 
 interface IProps {
   users: TUser[];
@@ -9,12 +9,12 @@ interface IProps {
 
 export const UsersList = ({ users }: IProps) => {
   return (
-    <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+    <div className="">
       <ul role="list" className="divide-y divide-gray-100">
-        {users.map(user => (
-          <User key={user.id} user={user}/>
+        {users.map((user) => (
+          <User key={user.id} user={user} />
         ))}
       </ul>
     </div>
-  )
-}
+  );
+};
