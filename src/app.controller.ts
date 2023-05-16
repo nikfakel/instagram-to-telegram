@@ -1,15 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import {FirebaseService} from "./services/firebase.service";
 
 @Controller()
 export class AppController {
-  constructor(
-    private readonly appService: AppService,
-    private readonly firebaseService: FirebaseService
-  ) {
-
-  }
+  constructor(private readonly appService: AppService) {}
 
   @Get()
   getHello(): string {

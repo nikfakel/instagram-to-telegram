@@ -1,6 +1,6 @@
-import {Controller, Get, Logger, Post, Query} from "@nestjs/common";
-import {InstagramApiService} from "./instagram-api.service";
-import {FirebaseService} from "../services/firebase.service";
+import { Controller, Get, Logger, Post, Query } from '@nestjs/common';
+import { InstagramApiService } from './instagram-api.service';
+import { FirebaseService } from '../services/firebase.service';
 
 @Controller()
 export class InstagramController {
@@ -21,15 +21,15 @@ export class InstagramController {
     console.log(query);
     try {
       if (!query.account) {
-        throw new Error('Query has no account');
+        return new Error('Query has no account');
       }
 
       const response = await this.instagramApiService.getPosts(query.account);
       this.logger.debug('getPostsManual in InstagramController');
       this.logger.debug(response);
       return response;
-    } catch(e) {
-      this.logger.error(e)
+    } catch (e) {
+      this.logger.error(e);
       return e;
     }
   }
@@ -39,17 +39,17 @@ export class InstagramController {
     try {
       this.instagramApiService.removePosts();
 
-      return 'Posts removed'
-    } catch(e) {
-      this.logger.error(e)
+      return 'Posts removed';
+    } catch (e) {
+      this.logger.error(e);
     }
   }
-  
+
   @Post('get-users')
   async getUsers() {
     try {
       return this.firebaseService.getUsers();
-    } catch(e) {
+    } catch (e) {
       this.logger.error(e);
     }
   }

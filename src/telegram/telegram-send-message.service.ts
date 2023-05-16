@@ -1,9 +1,13 @@
-import {Injectable, Logger} from "@nestjs/common";
-import {TelegramApiService} from "./telegram-api.service";
-import {TelegramMethod, TSetPosted, TTelegramPostToSend} from "../types/telegram";
-import {FirebaseService} from "../services/firebase.service";
-import {TInstagramPost} from "../types/instagram";
-import {TUser} from "../types/firebase";
+import { Injectable, Logger } from '@nestjs/common';
+import { TelegramApiService } from './telegram-api.service';
+import {
+  TelegramMethod,
+  TSetPosted,
+  TTelegramPostToSend,
+} from '../types/telegram';
+import { FirebaseService } from '../services/firebase.service';
+import { TInstagramPost } from '../types/instagram';
+import { TUser } from '../types/firebase';
 
 @Injectable()
 export class TelegramSendMessagesService {
@@ -12,20 +16,20 @@ export class TelegramSendMessagesService {
   constructor(
     private readonly telegramApiService: TelegramApiService,
     private readonly firebaseServise: FirebaseService,
-    ) {}
+  ) {}
 
   async sendPost(userId: number, channel: string) {
     try {
-      const data = await this.getPost(userId, channel)
+      const data = await this.getPost(userId, channel);
 
       if (data && data.user && data.post) {
         this.sendRequest(data.user, channel, data.post);
 
-        return data.post
+        return data.post;
       } else {
-        return 'New post not found'
+        return 'New post not found';
       }
-    } catch(e) {
+    } catch (e) {
       this.logger.error(e);
       return e;
     }
@@ -35,7 +39,7 @@ export class TelegramSendMessagesService {
     try {
       return await this.firebaseServise.getInstagramPost(userId, channel);
     } catch (error) {
-      this.logger.error(error)
+      this.logger.error(error);
     }
   }
 
@@ -52,9 +56,9 @@ export class TelegramSendMessagesService {
           ? response.data.result[0].chat.id
           : response.data.result.chat.id;
 
-        const linkToTelegramMessage = Array.isArray(response.data.result) ?
-          response.data.result[0].message_id
-          : response.data.result.message_id
+        const linkToTelegramMessage = Array.isArray(response.data.result)
+          ? response.data.result[0].message_id
+          : response.data.result.message_id;
 
         return this.setPosted({
           channel,
@@ -62,52 +66,55 @@ export class TelegramSendMessagesService {
           data,
           linkToTelegramMessage,
           linkToTelegramChat,
-        })
+        });
       }
     } catch (e) {
-      this.logger.error(e, '', 'sendRequest')
-      return e
+      this.logger.error(e, '', 'sendRequest');
+      return e;
     }
   }
 
   createMessage(post: TInstagramPost) {
-    let data: TTelegramPostToSend = {
+    const data: TTelegramPostToSend = {
       id: post.id,
       caption: post.caption,
       takenAtTimestamp: post.taken_at_timestamp,
     };
-    let header = undefined;
+    let header;
     let media = [];
 
     if (post.media && post.media.length === 0) {
       if (post.is_video) {
-        header = TelegramMethod.SendVideo
-        data.video = post.video_url
+        header = TelegramMethod.SendVideo;
+        data.video = post.video_url;
       } else {
-        header = TelegramMethod.SendPhoto
-        data.photo = post.display_url
+        header = TelegramMethod.SendPhoto;
+        data.photo = post.display_url;
       }
     } else {
       header = TelegramMethod.SendMediaGroup;
 
       if (post.is_video) {
-        media = [{ type: 'photo', media: post.video_url}, ...post.media.map(item => ({ type: 'photo', media: item }))];
+        media = [
+          { type: 'photo', media: post.video_url },
+          ...post.media.map((item) => ({ type: 'photo', media: item })),
+        ];
       } else {
-        media = post.media.map(item => ({ type: 'photo', media: item }))
+        media = post.media.map((item) => ({ type: 'photo', media: item }));
       }
 
-      data.media = JSON.stringify(media)
+      data.media = JSON.stringify(media);
     }
 
-    return { data, header }
+    return { data, header };
   }
 
   async setPosted(messageData: TSetPosted) {
     try {
-      return await this.firebaseServise.setPosted(messageData)
-    } catch(e) {
+      return await this.firebaseServise.setPosted(messageData);
+    } catch (e) {
       this.logger.error(e);
-      return e
+      return e;
     }
   }
 }

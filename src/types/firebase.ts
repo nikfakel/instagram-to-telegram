@@ -6,7 +6,7 @@ export type TParser = {
   linkToTelegramChat: string;
   linkToTelegramMessage: string;
   postedTimestamp: number;
-}
+};
 
 export type TUser = {
   id: number;
@@ -15,6 +15,6 @@ export type TUser = {
   lastName?: string;
   type: 'private';
   parsers?: {
-    [key: string]: TParser
-  }
-}
+    [key: string]: TParser;
+  };
+};

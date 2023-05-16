@@ -1,6 +1,4 @@
-import {ApiMethods} from "typegram";
-import {TInstagramPost} from "./instagram";
-import {TUser} from "./firebase";
+import { TUser } from './firebase';
 
 export enum TelegramMethod {
   SendPhoto = 'sendPhoto',
@@ -32,7 +30,7 @@ export type TelegramSuccessResponseResult = {
     height: number;
   }[];
   caption: string;
-}
+};
 
 export type TelegramSuccessResponse = {
   ok: boolean;
@@ -46,7 +44,7 @@ export type TTelegramUser = {
   username?: string;
   type: 'private';
   active_usernames?: string[];
-}
+};
 
 export type TTelegramPostToSend = {
   id: string;
@@ -55,13 +53,12 @@ export type TTelegramPostToSend = {
   video?: string;
   photo?: string;
   media?: string;
-}
+};
 
 export type TSetPosted = {
   channel: string;
   user: TUser;
   data: TTelegramPostToSend;
-  linkToTelegramMessage: number,
+  linkToTelegramMessage: number;
   linkToTelegramChat: number;
-}
-
+};

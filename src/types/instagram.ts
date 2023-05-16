@@ -1,8 +1,8 @@
-import {PurpleNode} from "insta-fetcher/dist/types";
+import { PurpleNode } from 'insta-fetcher/dist/types';
 
 export type TInstagramPost = Pick<
   PurpleNode,
-  '__typename'
+  | '__typename'
   | 'id'
   | 'is_video'
   | 'display_url'
@@ -13,10 +13,9 @@ export type TInstagramPost = Pick<
   media: string[]; // from edge_sidecar_to_children
   caption?: string; // from edge_media_to_caption
   text: string;
-}
+};
 
 export type InstagramSession = {
   id: string;
   timestamp: number;
-}
-
+};

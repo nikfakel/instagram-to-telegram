@@ -1,14 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import {TelegramMethod, TelegramSuccessResponse} from '../types/telegram';
+import { TelegramMethod, TelegramSuccessResponse } from '../types/telegram';
 import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from 'axios';
-import {Message} from "typegram";
 
 @Injectable()
 export class TelegramApiService {
-  constructor(
-    private readonly httpService: HttpService,
-  ) {}
+  constructor(private readonly httpService: HttpService) {}
 
   private readonly logger = new Logger(TelegramApiService.name);
 
