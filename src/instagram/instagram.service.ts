@@ -1,17 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { igApi, getCookie } from 'insta-fetcher';
-import { InstagramDBService } from './instagram-db.service';
+import { InstagramDBService } from '../services/db/instagram-db.service';
 import { TInstagramPost } from '../types/instagram';
 import { IPaginatedPosts } from 'insta-fetcher/dist/types/PaginatedPosts';
 
 @Injectable()
-export class InstagramApiService {
-  private readonly logger = new Logger(InstagramApiService.name);
+export class InstagramService {
+  private readonly logger = new Logger(InstagramService.name);
   private ig: igApi;
 
   constructor(private readonly instagramDBService: InstagramDBService) {}
 
-  async connect() {
+  private async connect() {
     const sessionId = await this.getSessionId();
 
     if (sessionId) {
@@ -23,7 +23,11 @@ export class InstagramApiService {
   }
 
   async getSessionId() {
-    return this.instagramDBService.getSessionId();
+    try {
+      return this.instagramDBService.getSessionId();
+    } catch (e) {
+      this.logger.error(e);
+    }
   }
 
   async setSessionId() {
@@ -59,7 +63,7 @@ export class InstagramApiService {
     }
   }
 
-  proceedPosts(paginatedPosts: IPaginatedPosts): TInstagramPost[] {
+  private proceedPosts(paginatedPosts: IPaginatedPosts): TInstagramPost[] {
     return paginatedPosts.edges.map(({ node: post }) => {
       return {
         id: post.id,
@@ -86,7 +90,7 @@ export class InstagramApiService {
     try {
       const updatedPosts = this.proceedPosts(posts);
       await this.instagramDBService.setPosts(instagramAccount, updatedPosts);
-      this.logger.debug('POSTS WERE UPDATED');
+
       return updatedPosts;
     } catch (error) {
       this.logger.error(error);
@@ -96,6 +100,21 @@ export class InstagramApiService {
   async removePosts() {
     try {
       this.instagramDBService.removePosts();
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+
+  async getNextPost(userId: number, channel: string) {
+    try {
+      return this.instagramDBService.getNextPost(userId, channel);
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+  async getLastPublishedPost(userId: number, channel: string) {
+    try {
+      return this.instagramDBService.getLastPublishedPost(userId, channel);
     } catch (e) {
       this.logger.error(e);
     }

@@ -1,26 +1,28 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { TelegramApiService } from './telegram-api.service';
+import { TelegramApiService } from '../services/telegram-api.service';
 import {
   TelegramMethod,
   TSetPosted,
   TTelegramPostToSend,
 } from '../types/telegram';
-import { FirebaseService } from '../services/firebase.service';
 import { TInstagramPost } from '../types/instagram';
 import { TUser } from '../types/firebase';
+import { InstagramService } from '../instagram/instagram.service';
+import { TelegramDBService } from '../services/db/telegram-db.service';
 
 @Injectable()
-export class TelegramSendMessagesService {
-  private readonly logger = new Logger(TelegramSendMessagesService.name);
+export class TelegramService {
+  private readonly logger = new Logger(TelegramService.name);
 
   constructor(
     private readonly telegramApiService: TelegramApiService,
-    private readonly firebaseServise: FirebaseService,
+    private readonly telegramDBService: TelegramDBService,
+    private readonly instagramService: InstagramService,
   ) {}
 
   async sendPost(userId: number, channel: string) {
     try {
-      const data = await this.getPost(userId, channel);
+      const data = await this.instagramService.getNextPost(userId, channel);
 
       if (data instanceof Error) {
         return 'Something went wrong';
@@ -36,14 +38,6 @@ export class TelegramSendMessagesService {
     } catch (e) {
       this.logger.error(e);
       return e;
-    }
-  }
-
-  async getPost(userId: number, channel: string) {
-    try {
-      return await this.firebaseServise.getInstagramPost(userId, channel);
-    } catch (error) {
-      this.logger.error(error);
     }
   }
 
@@ -66,7 +60,7 @@ export class TelegramSendMessagesService {
           ? response.data.result[0].message_id
           : response.data.result.message_id;
 
-        return this.setPosted({
+        return this.telegramDBService.setMessagePosted({
           channel,
           user,
           data,
@@ -113,14 +107,5 @@ export class TelegramSendMessagesService {
     }
 
     return { data, header };
-  }
-
-  async setPosted(messageData: TSetPosted) {
-    try {
-      return await this.firebaseServise.setPosted(messageData);
-    } catch (e) {
-      this.logger.error(e);
-      return e;
-    }
   }
 }

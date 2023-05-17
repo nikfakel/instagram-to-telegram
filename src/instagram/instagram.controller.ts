@@ -1,30 +1,58 @@
-import { Body, Controller, Get, Logger, Post, Query } from '@nestjs/common';
-import { InstagramApiService } from './instagram-api.service';
-import { FirebaseService } from '../services/firebase.service';
+import { Body, Controller, Logger, Post } from '@nestjs/common';
+import { InstagramService } from './instagram.service';
 
-@Controller()
+@Controller('instagram')
 export class InstagramController {
-  private readonly logger = new Logger(InstagramApiService.name);
+  private readonly logger = new Logger(InstagramService.name);
 
-  constructor(
-    private readonly instagramApiService: InstagramApiService,
-    private readonly firebaseService: FirebaseService,
-  ) {}
+  constructor(private readonly instagramService: InstagramService) {}
 
-  @Get('inst-auth')
-  async authInst() {
-    this.instagramApiService.setSessionId();
+  @Post('set-session')
+  async setSession() {
+    try {
+      this.instagramService.setSessionId();
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+  @Post('get-last-published-post')
+  async getLastPublishedPost(
+    @Body() body: { userId: number; channel: string },
+  ) {
+    const { userId, channel } = body;
+    if (!userId || !channel) {
+      return 'userId or channel are not found';
+    }
+
+    try {
+      return await this.instagramService.getLastPublishedPost(userId, channel);
+    } catch (e) {
+      this.logger.error(e);
+    }
   }
 
-  @Get('get-posts')
-  async getPostsManual(@Query() query: { [key: string]: string }) {
-    console.log(query);
+  @Post('get-next-post')
+  async getNextPost(@Body() body: { userId: number; channel: string }) {
+    const { userId, channel } = body;
+    if (!userId || !channel) {
+      return 'userId or channel are not found';
+    }
+
     try {
-      if (!query.account) {
-        return new Error('Query has no account');
+      return await this.instagramService.getNextPost(userId, channel);
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+
+  @Post('get-posts')
+  async getPosts(@Body() body: { instagram: string }) {
+    try {
+      if (!body.instagram) {
+        return new Error('Body has no instagram account');
       }
 
-      const response = await this.instagramApiService.getPosts(query.account);
+      const response = await this.instagramService.getPosts(body.instagram);
       this.logger.debug('getPostsManual in InstagramController');
       this.logger.debug(response);
       return response;
@@ -34,33 +62,12 @@ export class InstagramController {
     }
   }
 
-  @Get('remove-posts')
+  @Post('remove-posts')
   async removePosts() {
     try {
-      this.instagramApiService.removePosts();
+      this.instagramService.removePosts();
 
       return 'Posts removed';
-    } catch (e) {
-      this.logger.error(e);
-    }
-  }
-
-  @Post('get-users')
-  async getUsers() {
-    try {
-      return this.firebaseService.getUsers();
-    } catch (e) {
-      this.logger.error(e);
-    }
-  }
-
-  @Post('get-user')
-  async getUser(@Body() body: { userId: number }) {
-    if (!body.userId) {
-      return 'Set user id in post.body';
-    }
-    try {
-      return this.firebaseService.getUser(body.userId);
     } catch (e) {
       this.logger.error(e);
     }

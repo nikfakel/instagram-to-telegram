@@ -1,10 +1,9 @@
 import { Controller, Logger } from '@nestjs/common';
 import { Telegraf, Markup } from 'telegraf';
 import { callbackQuery, message } from 'telegraf/filters';
-import { FirebaseService } from '../services/firebase.service';
-import { TelegramApiService } from './telegram-api.service';
 import { Chat } from 'typegram';
 import PrivateGetChat = Chat.PrivateGetChat;
+import { UsersService } from '../users/users.service';
 const EventSource = require('eventsource');
 
 @Controller('telegram-bot')
@@ -12,7 +11,7 @@ export class TelegramBotController {
   private readonly logger: Logger = new Logger(TelegramBotController.name);
   private bot: Telegraf;
 
-  constructor(private readonly firebaseService: FirebaseService) {
+  constructor(private readonly usersService: UsersService) {
     if (this.bot) {
       this.bot.stop('reinitialize');
     }
@@ -66,11 +65,11 @@ export class TelegramBotController {
       if (dataCommand.c === 'save_changes') {
         ctx.reply('Setting were saved');
         try {
-          await this.firebaseService.saveNewChannel({
+          await this.usersService.saveNewChannel(
             userId,
-            channel: dataCommand.ch,
-            instagram: dataCommand.i,
-          });
+            dataCommand.ch,
+            dataCommand.i,
+          );
           return this.bot.telegram.answerCbQuery(id, 'New channel was saved');
         } catch (e) {
           this.logger.error(e);
@@ -116,7 +115,7 @@ export class TelegramBotController {
     this.bot.command('getactiveparsers', async (ctx) => {
       try {
         ctx.reply('Load parsers list');
-        const activeParsers = await this.firebaseService.getActiveParsers(
+        const activeParsers = await this.usersService.getActiveParsers(
           ctx.message.from.id,
         );
         if (activeParsers && activeParsers.length > 0) {
@@ -192,7 +191,7 @@ Format: rihannaofficiall`);
     };
 
     try {
-      this.firebaseService.saveUser(user);
+      this.usersService.saveUser(user);
     } catch (e) {
       this.logger.error(e);
     }
