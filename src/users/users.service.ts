@@ -17,14 +17,14 @@ export class UsersService {
 
   async getUser(userId: number) {
     try {
-      this.userDBService.getUser(userId);
+      return this.userDBService.getUser(userId);
     } catch (e) {
       this.logger.error(e);
     }
   }
   async saveUser(user: TUser) {
     try {
-      this.userDBService.saveUser(user);
+      return this.userDBService.saveUser(user);
     } catch (e) {
       this.logger.error(e);
     }
