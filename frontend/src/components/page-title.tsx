@@ -3,5 +3,9 @@ interface IProps {
 }
 
 export const PageTitle = ({ title }: IProps) => {
-  return <h1 className="text-lg font-semibold my-4">{title}</h1>;
+  return (
+    <header className="px-5 py-4 border-b border-gray-100">
+      <h2 className="font-semibold text-gray-800">{title}</h2>
+    </header>
+  );
 };

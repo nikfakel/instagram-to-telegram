@@ -1,4 +1,4 @@
-import { TParser } from '../../../src/types/firebase';
+import { TParser } from '../../../../src/types/firebase';
 import { getParsers } from '@/helpers/get-parsers';
 import Link from 'next/link';
 
@@ -15,7 +15,7 @@ export const Parsers = ({ parsers, userId }: IProps) => {
       <ul>
         {getParsers(parsers).map((parser) => (
           <li key={parser.channel}>
-            <Link href={`/parsers/${userId}`}>
+            <Link href={`/parsers/${userId}/${parser.channel}`}>
               {parser.channel} - {parser.instagram}
             </Link>
           </li>

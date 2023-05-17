@@ -1,6 +1,6 @@
 import './globals.css';
 import { Inter } from 'next/font/google';
-import { MainMenu } from '../components/menu';
+import { MainMenu } from '@/components/menu';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,7 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <MainMenu />
-        <main className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+        <main className="container mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
           {children}
         </main>
       </body>
