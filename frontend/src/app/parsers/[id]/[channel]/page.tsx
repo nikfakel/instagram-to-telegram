@@ -3,14 +3,18 @@ import { TUser } from '../../../../../../src/types/firebase';
 import { PostsManager } from '@/app/parsers/[id]/[channel]/posts-manager';
 
 const getUser = async (id: number) => {
-  const response = await fetchData<TUser>('get-user', {
-    userId: id,
-  });
+  try {
+    const response = await fetchData<TUser>('users/get-user', {
+      userId: id,
+    });
 
-  if (response.ok) {
-    return response.data;
-  } else {
-    throw new Error('Cant get data');
+    if (response.ok) {
+      return response.data;
+    } else {
+      throw new Error('Cant get data');
+    }
+  } catch (e) {
+    console.log(e);
   }
 };
 

@@ -110,6 +110,33 @@ export class InstagramDBService {
   }
 
   async getLastPublishedPost(userId: number, channel: string) {
-    return {};
+    console.log('userId, channel');
+    console.log(userId, channel);
+    try {
+      const userRef = await this.firebaseService.db
+        .collection('users')
+        .doc(String(userId))
+        .get();
+
+      const user = userRef.data();
+      console.log(user);
+
+      const postId = user?.parsers?.[channel].postId;
+      const instagram = user?.parsers?.[channel].instagram;
+
+      console.log(postId);
+      const postRef = await this.firebaseService.db
+        .collection('instagram')
+        .doc(instagram)
+        .collection('posts')
+        .doc(postId)
+        .get();
+
+      const response = await postRef.data();
+      console.log(response);
+      return response;
+    } catch (e) {
+      this.logger.error(e);
+    }
   }
 }

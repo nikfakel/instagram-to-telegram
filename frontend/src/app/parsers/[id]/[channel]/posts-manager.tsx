@@ -20,7 +20,7 @@ export const PostsManager = ({ userId, channel, parser }: IProps) => {
   const getLastPublishedPost = async () => {
     try {
       const response = await fetchData<TInstagramPost>(
-        'get-last-published-post',
+        'instagram/get-last-published-post',
         {
           userId,
           channel,
@@ -68,7 +68,7 @@ export const PostsManager = ({ userId, channel, parser }: IProps) => {
   return (
     <div>
       <div>
-        <button onClick={getLastPublishedPost}>Get next post</button>
+        <button onClick={getLastPublishedPost}>Get last published post</button>
         <button onClick={getNextPost}>Get next post</button>
         <button onClick={getAllPosts}>Get all posts</button>
       </div>
