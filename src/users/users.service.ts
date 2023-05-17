@@ -9,7 +9,7 @@ export class UsersService {
 
   async getUsers() {
     try {
-      this.userDBService.getUsers();
+      return this.userDBService.getUsers();
     } catch (e) {
       this.logger.error(e);
     }
