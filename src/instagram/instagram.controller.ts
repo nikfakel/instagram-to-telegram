@@ -49,11 +49,26 @@ export class InstagramController {
   @Post('get-posts')
   async getPosts(@Body() body: { instagram: string }) {
     try {
+      const { instagram } = body;
+
+      if (!instagram) {
+        return 'instagram doesnt exist in body';
+      }
+
+      return await this.instagramService.getPosts(instagram);
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+
+  @Post('fetch-posts')
+  async getAndSavePosts(@Body() body: { instagram: string }) {
+    try {
       if (!body.instagram) {
         return new Error('Body has no instagram account');
       }
 
-      const response = await this.instagramService.getPosts(body.instagram);
+      const response = await this.instagramService.fetchPosts(body.instagram);
       this.logger.debug('getPostsManual in InstagramController');
       this.logger.debug(response);
       return response;

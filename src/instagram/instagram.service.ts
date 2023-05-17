@@ -49,7 +49,14 @@ export class InstagramService {
     }
   }
 
-  async getPosts(instagramAccount: string) {
+  async getPosts(instagram: string) {
+    try {
+      return this.instagramDBService.getPosts(instagram);
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+  async fetchPosts(instagramAccount: string) {
     await this.connect();
 
     if (this.ig) {

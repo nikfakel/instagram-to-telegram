@@ -53,9 +53,12 @@ export const PostsManager = ({ userId, channel, parser }: IProps) => {
 
   const getAllPosts = async () => {
     try {
-      const response = await fetchData<TInstagramPost[]>('get-posts', {
-        instagam: 'rihannaofficiall',
-      });
+      const response = await fetchData<TInstagramPost[]>(
+        'instagram/get-posts',
+        {
+          instagram: 'rihannaofficiall',
+        },
+      );
       if (response && response.data) {
         setAllPost(response.data);
       }

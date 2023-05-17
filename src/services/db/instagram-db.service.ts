@@ -125,4 +125,18 @@ export class InstagramDBService {
       this.logger.error(e);
     }
   }
+
+  async getPosts(instagram: string) {
+    try {
+      const postsRef = await this.firebaseService.db
+        .collection('instagram')
+        .doc(instagram)
+        .collection('posts')
+        .get();
+
+      return postsRef.docs.map((item) => item.data());
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
 }
