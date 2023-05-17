@@ -4,7 +4,7 @@ const DOMAIN = 'http://localhost:3000';
 
 export const fetchData = async <T>(
   url: string,
-  body?: { [key: string]: string },
+  body?: { [key: string]: string | number },
 ): Promise<{ ok: boolean; data: T | null; error?: string }> => {
   try {
     const response = await axios.post<T>(`${DOMAIN}/${url}`, body);
