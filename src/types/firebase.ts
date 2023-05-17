@@ -3,9 +3,10 @@ export type TParser = {
   startedAt: number;
   isStopped: boolean;
   takenAtTimestamp: number;
-  linkToTelegramChat: string;
+  linkToTelegramChat: number;
   linkToTelegramMessage: string;
   postedTimestamp: number;
+  postId: string;
 };
 
 export type TUser = {
