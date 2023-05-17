@@ -20,7 +20,7 @@ export class TelegramDBService {
         .collection('users')
         .doc(String(user.id))
         .update({
-          [`instagram.${channel}`]: {
+          [`parsers.${channel}`]: {
             postId: data.id,
             takenAtTimestamp: data.takenAtTimestamp,
             linkToTelegramMessage,
