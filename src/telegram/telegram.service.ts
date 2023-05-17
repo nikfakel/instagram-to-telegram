@@ -9,6 +9,7 @@ import { TInstagramPost } from '../types/instagram';
 import { TUser } from '../types/firebase';
 import { InstagramService } from '../instagram/instagram.service';
 import { TelegramDBService } from '../services/db/telegram-db.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class TelegramService {
@@ -18,20 +19,18 @@ export class TelegramService {
     private readonly telegramApiService: TelegramApiService,
     private readonly telegramDBService: TelegramDBService,
     private readonly instagramService: InstagramService,
+    private readonly usersService: UsersService,
   ) {}
 
   async sendPost(userId: number, channel: string) {
     try {
-      const data = await this.instagramService.getNextPost(userId, channel);
+      const post = await this.instagramService.getNextPost(userId, channel);
+      const user = await this.usersService.getUser(userId);
 
-      if (data instanceof Error) {
-        return 'Something went wrong';
-      }
+      if (post && user) {
+        await this.sendRequest(user, channel, post);
 
-      if (data && data.user && data?.post) {
-        await this.sendRequest(data.user, channel, data.post);
-
-        return data.post;
+        return 'Post was published';
       } else {
         return 'New post not found';
       }

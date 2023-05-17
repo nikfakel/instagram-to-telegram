@@ -80,7 +80,7 @@ export class InstagramDBService {
       const instagramAccount = user?.parsers?.[channel].instagram;
 
       if (!lastPostTimestamp || !instagramAccount) {
-        return new Error('Something went wrong in db (getInstagramPost)');
+        throw new Error('Something went wrong in db (getInstagramPost)');
       }
 
       const snapshot = await this.firebaseService.db
@@ -94,15 +94,8 @@ export class InstagramDBService {
 
       if (snapshot.empty) {
         this.logger.debug('No matching document');
-        return {
-          user: null,
-          post: null,
-        };
       } else {
-        return {
-          user,
-          post: snapshot.docs.map((item) => item.data())[0] as TInstagramPost,
-        };
+        return snapshot.docs.map((item) => item.data())[0] as TInstagramPost;
       }
     } catch (e) {
       this.logger.error(e);
@@ -110,8 +103,6 @@ export class InstagramDBService {
   }
 
   async getLastPublishedPost(userId: number, channel: string) {
-    console.log('userId, channel');
-    console.log(userId, channel);
     try {
       const userRef = await this.firebaseService.db
         .collection('users')
@@ -119,12 +110,9 @@ export class InstagramDBService {
         .get();
 
       const user = userRef.data();
-      console.log(user);
-
       const postId = user?.parsers?.[channel].postId;
       const instagram = user?.parsers?.[channel].instagram;
 
-      console.log(postId);
       const postRef = await this.firebaseService.db
         .collection('instagram')
         .doc(instagram)
@@ -132,9 +120,7 @@ export class InstagramDBService {
         .doc(postId)
         .get();
 
-      const response = await postRef.data();
-      console.log(response);
-      return response;
+      return await postRef.data();
     } catch (e) {
       this.logger.error(e);
     }

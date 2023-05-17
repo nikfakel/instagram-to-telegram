@@ -36,10 +36,13 @@ export const PostsManager = ({ userId, channel, parser }: IProps) => {
 
   const getNextPost = async () => {
     try {
-      const response = await fetchData<TInstagramPost>('get-next-post', {
-        userId,
-        channel,
-      });
+      const response = await fetchData<TInstagramPost>(
+        'instagram/get-next-post',
+        {
+          userId,
+          channel,
+        },
+      );
       if (response.data) {
         setNextPost(response.data);
       }
