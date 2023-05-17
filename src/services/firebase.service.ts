@@ -96,6 +96,16 @@ export class FirebaseService {
         return new Error('Something went wrong in db (getInstagramPost)');
       }
 
+      const wh = await this.db
+        .collection('instagram')
+        .doc(instagramAccount)
+        .collection('posts')
+        .where('taken_at_timestamp', '>', lastPostTimestamp)
+        .get();
+
+      const a = wh.docs.map((item) => item.data());
+      console.log(a);
+
       const snapshot = await this.db
         .collection('instagram')
         .doc(instagramAccount)
@@ -129,8 +139,6 @@ export class FirebaseService {
     linkToTelegramMessage,
     linkToTelegramChat,
   }: TSetPosted) {
-    console.log(channel, user, data, linkToTelegramMessage, linkToTelegramChat);
-
     try {
       const resp = await this.db
         .collection('users')
@@ -249,6 +257,18 @@ export class FirebaseService {
     try {
       const usersSnapshot = await this.db.collection('users').get();
       return usersSnapshot.docs.map((doc) => doc.data()) as TUser[];
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+  async getUser(userId: number) {
+    try {
+      const userSnapshot = await this.db
+        .collection('users')
+        .doc(String(userId))
+        .get();
+      const user = userSnapshot.data();
+      return user as TUser;
     } catch (e) {
       this.logger.error(e);
     }

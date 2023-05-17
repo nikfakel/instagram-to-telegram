@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, Query } from '@nestjs/common';
 import { InstagramApiService } from './instagram-api.service';
 import { FirebaseService } from '../services/firebase.service';
 
@@ -49,6 +49,18 @@ export class InstagramController {
   async getUsers() {
     try {
       return this.firebaseService.getUsers();
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+
+  @Post('get-user')
+  async getUser(@Body() body: { userId: number }) {
+    if (!body.userId) {
+      return 'Set user id in post.body';
+    }
+    try {
+      return this.firebaseService.getUser(body.userId);
     } catch (e) {
       this.logger.error(e);
     }

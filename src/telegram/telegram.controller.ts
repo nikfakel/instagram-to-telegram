@@ -30,7 +30,7 @@ export class TelegramController {
     try {
       return await this.telegramSendMessageService.getPost(
         246047689,
-        'other_channel',
+        'rihanna_instagram',
       );
     } catch (e) {
       this.logger.error(e);
@@ -42,7 +42,7 @@ export class TelegramController {
     try {
       return this.telegramSendMessageService.sendPost(
         246047689,
-        'other_channel',
+        'rihanna_instagram',
       );
     } catch (e) {
       this.logger.error(e);

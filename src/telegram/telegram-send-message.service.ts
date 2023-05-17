@@ -49,9 +49,11 @@ export class TelegramSendMessagesService {
 
   async sendRequest(user: TUser, channel: string, post: TInstagramPost) {
     const { data, header } = this.createMessage(post);
+
+    console.log(data);
     try {
       const response = await this.telegramApiService.sendRequest(header, {
-        chat_id: '@rihanna_instagram',
+        chat_id: `@${channel}`,
         ...data,
       });
 
