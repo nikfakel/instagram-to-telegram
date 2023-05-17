@@ -1,4 +1,5 @@
 import { TParser } from '../../../src/types/firebase';
+import { getParsers } from '@/helpers/get-parsers';
 import Link from 'next/link';
 
 interface IProps {
@@ -7,13 +8,6 @@ interface IProps {
     [key: string]: TParser;
   };
 }
-
-const getParsers = (parsers: { [key: string]: TParser }) => {
-  return Object.entries(parsers).map(([key, value]) => ({
-    channel: key,
-    ...value,
-  }));
-};
 
 export const Parsers = ({ parsers, userId }: IProps) => {
   return (
