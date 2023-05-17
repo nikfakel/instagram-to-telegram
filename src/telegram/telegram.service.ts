@@ -1,10 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TelegramApiService } from '../services/telegram-api.service';
-import {
-  TelegramMethod,
-  TSetPosted,
-  TTelegramPostToSend,
-} from '../types/telegram';
+import { TelegramMethod, TTelegramPostToSend } from '../types/telegram';
 import { TInstagramPost } from '../types/instagram';
 import { TUser } from '../types/firebase';
 import { InstagramService } from '../instagram/instagram.service';
@@ -28,9 +24,14 @@ export class TelegramService {
       const user = await this.usersService.getUser(userId);
 
       if (post && user) {
-        await this.sendRequest(user, channel, post);
+        const response = await this.sendRequest(user, channel, post);
+        const r = await this.telegramDBService.setMessagePosted(response);
 
-        return 'Post was published';
+        if (r) {
+          return 'Post was published';
+        } else {
+          return 'Something went wrong';
+        }
       } else {
         return 'New post not found';
       }
@@ -43,7 +44,6 @@ export class TelegramService {
   async sendRequest(user: TUser, channel: string, post: TInstagramPost) {
     const { data, header } = this.createMessage(post);
 
-    console.log(data);
     try {
       const response = await this.telegramApiService.sendRequest(header, {
         chat_id: `@${channel}`,
@@ -59,13 +59,13 @@ export class TelegramService {
           ? response.data.result[0].message_id
           : response.data.result.message_id;
 
-        return this.telegramDBService.setMessagePosted({
+        return {
           channel,
           user,
           data,
           linkToTelegramMessage,
           linkToTelegramChat,
-        });
+        };
       }
     } catch (e) {
       this.logger.error(e, '', 'sendRequest');
@@ -76,13 +76,14 @@ export class TelegramService {
   createMessage(post: TInstagramPost) {
     const data: TTelegramPostToSend = {
       id: post.id,
-      caption: post.caption,
       takenAtTimestamp: post.taken_at_timestamp,
     };
     let header;
     let media = [];
 
     if (post.media && post.media.length === 0) {
+      data.caption = post.caption;
+
       if (post.is_video) {
         header = TelegramMethod.SendVideo;
         data.video = post.video_url;
@@ -95,11 +96,19 @@ export class TelegramService {
 
       if (post.is_video) {
         media = [
-          { type: 'photo', media: post.video_url },
+          {
+            type: 'video',
+            media: post.video_url,
+            caption: post.caption,
+          },
           ...post.media.map((item) => ({ type: 'photo', media: item })),
         ];
       } else {
-        media = post.media.map((item) => ({ type: 'photo', media: item }));
+        media = post.media.map((item, index) => ({
+          type: 'photo',
+          media: item,
+          ...(index > 0 && { caption: post.caption }),
+        }));
       }
 
       data.media = JSON.stringify(media);

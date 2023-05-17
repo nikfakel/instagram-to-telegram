@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { FirebaseService } from '../firebase.service';
 import { TSetPosted } from '../../types/telegram';
 
-Injectable();
+@Injectable()
 export class TelegramDBService {
   private readonly logger = new Logger(TelegramDBService.name);
 
@@ -16,11 +16,12 @@ export class TelegramDBService {
     linkToTelegramChat,
   }: TSetPosted) {
     try {
-      const resp = await this.firebaseService.db
+      await this.firebaseService.db
         .collection('users')
         .doc(String(user.id))
         .update({
           [`parsers.${channel}`]: {
+            instagram: user.parsers?.[channel].instagram,
             postId: data.id,
             takenAtTimestamp: data.takenAtTimestamp,
             linkToTelegramMessage,
@@ -29,7 +30,7 @@ export class TelegramDBService {
           },
         });
 
-      console.log(resp);
+      return true;
     } catch (e) {
       this.logger.error(e);
       return e;

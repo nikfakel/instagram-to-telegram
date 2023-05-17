@@ -67,6 +67,15 @@ export const PostsManager = ({ userId, channel, parser }: IProps) => {
     }
   };
 
+  const sendPost = async () => {
+    const response = await fetchData('telegram/send-post', {
+      userId: userId,
+      channel: 'rihanna_instagram',
+    });
+
+    console.log(response);
+  };
+
   console.log(lastPublishedPost);
   console.log(nextPost);
   console.log(allPosts);
@@ -77,6 +86,7 @@ export const PostsManager = ({ userId, channel, parser }: IProps) => {
         <button onClick={getLastPublishedPost}>Get last published post</button>
         <button onClick={getNextPost}>Get next post</button>
         <button onClick={getAllPosts}>Get all posts</button>
+        <button onClick={sendPost}>Send post</button>
       </div>
       <div>Last published:</div>
       <div></div>
