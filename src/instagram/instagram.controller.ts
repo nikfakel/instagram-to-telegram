@@ -34,7 +34,7 @@ export class InstagramController {
   @Post('get-next-post')
   async getNextPost(@Body() body: { userId: number; channel: string }) {
     const { userId, channel } = body;
-    console.log(userId, channel);
+
     if (!userId || !channel) {
       return 'userId or channel are not found';
     }

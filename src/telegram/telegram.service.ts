@@ -24,11 +24,17 @@ export class TelegramService {
       const user = await this.usersService.getUser(userId);
 
       if (post && user) {
-        const response = await this.sendRequest(user, channel, post);
-        const r = await this.telegramDBService.setMessagePosted(response);
+        const responseSendMessage = await this.sendPostToTelegramChannel(
+          user,
+          channel,
+          post,
+        );
+        const responseSetPosted = await this.telegramDBService.setMessagePosted(
+          responseSendMessage,
+        );
 
-        if (r) {
-          return 'Post was published';
+        if (responseSetPosted) {
+          return responseSetPosted;
         } else {
           return 'Something went wrong';
         }
@@ -41,8 +47,14 @@ export class TelegramService {
     }
   }
 
-  async sendRequest(user: TUser, channel: string, post: TInstagramPost) {
+  async sendPostToTelegramChannel(
+    user: TUser,
+    channel: string,
+    post: TInstagramPost,
+  ) {
     const { data, header } = this.createMessage(post);
+
+    console.log(data);
 
     try {
       const response = await this.telegramApiService.sendRequest(header, {
@@ -101,13 +113,16 @@ export class TelegramService {
             media: post.video_url,
             caption: post.caption,
           },
-          ...post.media.map((item) => ({ type: 'photo', media: item })),
+          ...post.media.map((item) => ({
+            type: 'photo',
+            media: item,
+          })),
         ];
       } else {
         media = post.media.map((item, index) => ({
           type: 'photo',
           media: item,
-          ...(index > 0 && { caption: post.caption }),
+          ...(index < 1 && { caption: post.caption }),
         }));
       }
 

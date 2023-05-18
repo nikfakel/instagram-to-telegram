@@ -30,7 +30,7 @@ export class TelegramDBService {
           },
         });
 
-      return true;
+      return data;
     } catch (e) {
       this.logger.error(e);
       return e;
