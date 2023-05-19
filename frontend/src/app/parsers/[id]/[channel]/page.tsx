@@ -4,12 +4,12 @@ import { PostsManager } from '@/app/parsers/[id]/[channel]/posts-manager';
 
 const getUser = async (id: number) => {
   try {
-    const response = await fetchData<TUser>('users/get-user', {
+    const user = await fetchData<TUser>('users/get-user', {
       userId: id,
     });
 
-    if (response.ok) {
-      return response.data;
+    if (user.ok) {
+      return user.data;
     } else {
       throw new Error('Cant get data');
     }
