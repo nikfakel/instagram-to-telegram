@@ -1,4 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InstagramSession, TInstagramPost } from '../../types/instagram';
 import { FirebaseService } from '../firebase.service';
 import { TUser } from '../../types/firebase';
@@ -17,6 +22,7 @@ export class InstagramDBService {
       });
     } catch (e) {
       this.logger.error(e);
+      return e;
     }
   }
 
@@ -29,6 +35,7 @@ export class InstagramDBService {
       return snapshot.data() as InstagramSession;
     } catch (e) {
       this.logger.error(e);
+      return e;
     }
   }
 
@@ -50,6 +57,7 @@ export class InstagramDBService {
       await batch.commit();
     } catch (e) {
       this.logger.error(e);
+      return e;
     }
   }
 
@@ -65,6 +73,7 @@ export class InstagramDBService {
         });
     } catch (e) {
       this.logger.error(e);
+      return e;
     }
   }
 
@@ -76,11 +85,14 @@ export class InstagramDBService {
         .get();
 
       const user = userData.data() as TUser;
-      const lastPostTimestamp = user?.parsers?.[channel].takenAtTimestamp;
+      const lastPostTimestamp = user?.parsers?.[channel].takenAtTimestamp || 1;
       const instagramAccount = user?.parsers?.[channel].instagram;
 
-      if (!lastPostTimestamp || !instagramAccount) {
-        throw new Error('Something went wrong in db (getInstagramPost)');
+      if (!instagramAccount) {
+        throw new NotFoundException({
+          status: HttpStatus.NOT_FOUND,
+          error: 'Instagram is not set for parser',
+        });
       }
 
       const snapshot = await this.firebaseService.db
@@ -93,12 +105,16 @@ export class InstagramDBService {
         .get();
 
       if (snapshot.empty) {
-        this.logger.debug('No matching document');
+        throw new NotFoundException({
+          status: HttpStatus.NOT_FOUND,
+          error: 'Cannot find post by ID',
+        });
       } else {
         return snapshot.docs.map((item) => item.data())[0] as TInstagramPost;
       }
     } catch (e) {
       this.logger.error(e);
+      return e;
     }
   }
 
@@ -113,6 +129,13 @@ export class InstagramDBService {
       const postId = user?.parsers?.[channel].postId;
       const instagram = user?.parsers?.[channel].instagram;
 
+      if (!postId) {
+        throw new NotFoundException({
+          status: HttpStatus.NOT_FOUND,
+          error: 'There was no published posts yet',
+        });
+      }
+
       const postRef = await this.firebaseService.db
         .collection('instagram')
         .doc(instagram)
@@ -123,6 +146,7 @@ export class InstagramDBService {
       return await postRef.data();
     } catch (e) {
       this.logger.error(e);
+      return e;
     }
   }
 
@@ -137,6 +161,7 @@ export class InstagramDBService {
       return postsRef.docs.map((item) => item.data());
     } catch (e) {
       this.logger.error(e);
+      return e;
     }
   }
 }

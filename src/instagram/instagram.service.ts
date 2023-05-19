@@ -1,4 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { igApi, getCookie } from 'insta-fetcher';
 import { InstagramDBService } from '../services/db/instagram-db.service';
 import { TInstagramPost } from '../types/instagram';
@@ -12,13 +17,26 @@ export class InstagramService {
   constructor(private readonly instagramDBService: InstagramDBService) {}
 
   private async connect() {
-    const sessionId = await this.getSessionId();
+    let connectCount = 0;
+    try {
+      const sessionId = await this.getSessionId();
 
-    if (sessionId) {
-      this.ig = new igApi(sessionId.id, false);
-    } else {
-      await this.setSessionId();
-      await this.connect();
+      if (connectCount > 2) {
+        throw new InternalServerErrorException({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Cannot connect to instagram (3 times)',
+        });
+      }
+      connectCount++;
+
+      if (sessionId) {
+        this.ig = new igApi(sessionId.id, false);
+      } else {
+        await this.setSessionId();
+        await this.connect();
+      }
+    } catch (e) {
+      this.logger.error(e);
     }
   }
 
@@ -35,17 +53,22 @@ export class InstagramService {
       const instagramLogin = process.env.INSTAGRAM_LOGIN;
       const instagramPassword = process.env.INSTAGRAM_PASSWORD;
       if (!instagramLogin || !instagramPassword) {
-        return new Error('Env variables are not exist');
+        throw new InternalServerErrorException({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Cannot find env variables',
+        });
       }
+
       const newSessionId = (await getCookie(
         instagramLogin,
         instagramPassword,
       )) as string;
+
       const timestamp = Date.now();
 
       await this.instagramDBService.setSessionId(newSessionId, timestamp);
     } catch (e) {
-      console.log(e);
+      this.logger.error(e);
     }
   }
 
@@ -56,41 +79,19 @@ export class InstagramService {
       this.logger.error(e);
     }
   }
-  async fetchPosts(instagramAccount: string) {
+  async fetchPosts(instagram: string) {
     await this.connect();
 
     if (this.ig) {
       try {
-        const response = await this.ig.fetchUserPostsV2(instagramAccount);
-        return this.savePosts(instagramAccount, response);
+        const response = await this.ig.fetchUserPostsV2(instagram);
+
+        return this.savePosts(instagram, response);
       } catch (e) {
         this.logger.error(e);
         return e;
       }
     }
-  }
-
-  private proceedPosts(paginatedPosts: IPaginatedPosts): TInstagramPost[] {
-    return paginatedPosts.edges.map(({ node: post }) => {
-      return {
-        id: post.id,
-        __typename: post.__typename,
-        is_video: post.is_video,
-        video_url: post.video_url,
-        display_url: post.display_url,
-        taken_at_timestamp: post.taken_at_timestamp,
-        product_type: post.product_type,
-        media: post.edge_sidecar_to_children
-          ? post.edge_sidecar_to_children.edges.map(
-              ({ node }) => node.display_url,
-            )
-          : [],
-        ...(post?.edge_media_to_caption?.edges[0]?.node?.text && {
-          caption: post.edge_media_to_caption.edges[0].node.text,
-        }),
-        text: post.edge_media_to_caption.edges[0].node.text || '',
-      };
-    });
   }
 
   async savePosts(instagramAccount: string, posts: IPaginatedPosts) {
@@ -125,5 +126,28 @@ export class InstagramService {
     } catch (e) {
       this.logger.error(e);
     }
+  }
+
+  private proceedPosts(paginatedPosts: IPaginatedPosts): TInstagramPost[] {
+    return paginatedPosts.edges.map(({ node: post }) => {
+      return {
+        id: post.id,
+        __typename: post.__typename,
+        is_video: post.is_video,
+        video_url: post.video_url,
+        display_url: post.display_url,
+        taken_at_timestamp: post.taken_at_timestamp,
+        product_type: post.product_type,
+        media: post.edge_sidecar_to_children
+          ? post.edge_sidecar_to_children.edges.map(
+              ({ node }) => node.display_url,
+            )
+          : [],
+        ...(post?.edge_media_to_caption?.edges[0]?.node?.text && {
+          caption: post.edge_media_to_caption.edges[0].node.text,
+        }),
+        text: post.edge_media_to_caption.edges[0].node.text || '',
+      };
+    });
   }
 }

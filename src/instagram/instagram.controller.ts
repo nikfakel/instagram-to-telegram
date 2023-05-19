@@ -68,10 +68,7 @@ export class InstagramController {
         return new Error('Body has no instagram account');
       }
 
-      const response = await this.instagramService.fetchPosts(body.instagram);
-      this.logger.debug('getPostsManual in InstagramController');
-      this.logger.debug(response);
-      return response;
+      return await this.instagramService.fetchPosts(body.instagram);
     } catch (e) {
       this.logger.error(e);
       return e;
