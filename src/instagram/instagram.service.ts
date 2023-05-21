@@ -98,6 +98,7 @@ export class InstagramService {
     try {
       const updatedPosts = this.proceedPosts(posts);
       await this.instagramDBService.setPosts(instagramAccount, updatedPosts);
+      await this.instagramDBService.setPostsLastFetch(instagramAccount);
 
       return updatedPosts;
     } catch (error) {

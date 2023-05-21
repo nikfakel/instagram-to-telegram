@@ -16,7 +16,7 @@ export class TelegramBotController {
       this.bot.stop('reinitialize');
     }
 
-    this.initialize();
+    // this.initialize();
   }
 
   async initialize() {

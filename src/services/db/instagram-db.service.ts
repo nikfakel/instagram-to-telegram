@@ -39,14 +39,14 @@ export class InstagramDBService {
     }
   }
 
-  async setPosts(account: string, posts: TInstagramPost[]) {
+  async setPosts(instagram: string, posts: TInstagramPost[]) {
     try {
       const batch = this.firebaseService.db.batch();
 
       posts.forEach((post) => {
         const docRef = this.firebaseService.db
           .collection('instagram')
-          .doc(account)
+          .doc(instagram)
           .collection('posts')
           .doc(post.id);
         batch.set(docRef, post);
@@ -59,6 +59,12 @@ export class InstagramDBService {
       this.logger.error(e);
       return e;
     }
+  }
+
+  async setPostsLastFetch(instagram: string) {
+    this.firebaseService.db.collection('instagram').doc(instagram).update({
+      lastFetch: Date.now(),
+    });
   }
 
   async removePosts() {
