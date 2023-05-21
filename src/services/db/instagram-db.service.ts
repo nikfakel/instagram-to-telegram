@@ -100,7 +100,7 @@ export class InstagramDBService {
       if (!instagramAccount) {
         throw new NotFoundException({
           status: HttpStatus.NOT_FOUND,
-          error: 'Instagram is not set for parser',
+          error: 'Instagram is not found for parser',
         });
       }
 

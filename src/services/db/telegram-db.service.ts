@@ -12,6 +12,7 @@ export class TelegramDBService {
     channel,
     user,
     data,
+    takenAtTimestamp,
     linkToTelegramMessage,
     linkToTelegramChat,
   }: TSetPosted) {
@@ -23,7 +24,7 @@ export class TelegramDBService {
           [`parsers.${channel}`]: {
             instagram: user.parsers?.[channel].instagram,
             postId: data.id,
-            takenAtTimestamp: data.takenAtTimestamp,
+            takenAtTimestamp: takenAtTimestamp,
             linkToTelegramMessage,
             linkToTelegramChat,
             postedTimestamp: Date.now(),

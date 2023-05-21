@@ -49,7 +49,6 @@ export type TTelegramUser = {
 export type TTelegramPostToSend = {
   id: string;
   caption?: string;
-  takenAtTimestamp?: number;
   video?: string;
   photo?: string;
   media?: string;
@@ -59,6 +58,7 @@ export type TSetPosted = {
   channel: string;
   user: TUser;
   data: TTelegramPostToSend;
+  takenAtTimestamp: number;
   linkToTelegramMessage: number;
   linkToTelegramChat: number;
 };

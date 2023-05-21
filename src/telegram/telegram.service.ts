@@ -30,7 +30,7 @@ export class TelegramService {
           post,
         );
         const responseSetPosted = await this.telegramDBService.setMessagePosted(
-          responseSendMessage,
+          { ...responseSendMessage, takenAtTimestamp: post.takenAtTimestamp },
         );
 
         if (responseSetPosted) {
