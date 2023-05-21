@@ -54,8 +54,6 @@ export class TelegramService {
   ) {
     const { data, header } = this.createMessage(post);
 
-    console.log(data);
-
     try {
       const response = await this.telegramApiService.sendRequest(header, {
         chat_id: `@${channel}`,
@@ -88,7 +86,6 @@ export class TelegramService {
   createMessage(post: TInstagramPost) {
     const data: TTelegramPostToSend = {
       id: post.id,
-      takenAtTimestamp: post.taken_at_timestamp,
     };
     let header;
     let media = [];

@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { fetchData } from '@/store';
 import { TInstagramPost } from '../../../../../../src/types/instagram';
 import { TParser } from '../../../../../../src/types/firebase';
@@ -13,10 +12,10 @@ interface IProps {
 }
 export const PostsManager = ({ userId, channel, parser }: IProps) => {
   console.log(parser);
-  const [lastPublishedPost, setLastPublishedPost] =
-    useState<TInstagramPost | null>(null);
-  const [nextPost, setNextPost] = useState<TInstagramPost | null>(null);
-  const [allPosts, setAllPost] = useState<TInstagramPost[]>([]);
+  // const [lastPublishedPost, setLastPublishedPost] =
+  //   useState<TInstagramPost | null>(null);
+  // const [nextPost, setNextPost] = useState<TInstagramPost | null>(null);
+  // const [allPosts, setAllPost] = useState<TInstagramPost[]>([]);
 
   const getLastPublishedPost = async () => {
     try {
@@ -88,10 +87,6 @@ export const PostsManager = ({ userId, channel, parser }: IProps) => {
     const response = await fetchData('instagram/set-session');
     console.log(response);
   };
-
-  console.log(lastPublishedPost);
-  console.log(nextPost);
-  console.log(allPosts);
 
   return (
     <div>

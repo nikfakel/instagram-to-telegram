@@ -10,7 +10,7 @@ export class InstagramController {
   @Post('set-session')
   async setSession() {
     try {
-      this.instagramService.setSessionId();
+      await this.instagramService.setSessionId();
     } catch (e) {
       this.logger.error(e);
     }
@@ -78,7 +78,7 @@ export class InstagramController {
   @Post('remove-posts')
   async removePosts() {
     try {
-      this.instagramService.removePosts();
+      await this.instagramService.removePosts();
 
       return 'Posts removed';
     } catch (e) {

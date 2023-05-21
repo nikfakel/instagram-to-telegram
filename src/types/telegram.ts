@@ -49,7 +49,7 @@ export type TTelegramUser = {
 export type TTelegramPostToSend = {
   id: string;
   caption?: string;
-  takenAtTimestamp: number;
+  takenAtTimestamp?: number;
   video?: string;
   photo?: string;
   media?: string;

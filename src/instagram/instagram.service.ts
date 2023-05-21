@@ -79,6 +79,7 @@ export class InstagramService {
       this.logger.error(e);
     }
   }
+
   async fetchPosts(instagram: string) {
     await this.connect();
 
@@ -121,6 +122,7 @@ export class InstagramService {
       this.logger.error(e);
     }
   }
+
   async getLastPublishedPost(userId: number, channel: string) {
     try {
       return this.instagramDBService.getLastPublishedPost(userId, channel);

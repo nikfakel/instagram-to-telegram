@@ -62,9 +62,12 @@ export class InstagramDBService {
   }
 
   async setPostsLastFetch(instagram: string) {
-    this.firebaseService.db.collection('instagram').doc(instagram).update({
-      lastFetch: Date.now(),
-    });
+    await this.firebaseService.db
+      .collection('instagram')
+      .doc(instagram)
+      .update({
+        lastFetch: Date.now(),
+      });
   }
 
   async removePosts() {
