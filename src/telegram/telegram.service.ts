@@ -114,14 +114,14 @@ export class TelegramService {
             caption: post.caption,
           },
           ...post.media.map((item) => ({
-            type: 'photo',
-            media: item,
+            type: item.is_video ? 'video' : 'photo',
+            media: item.is_video ? item.video_url : item.display_url,
           })),
         ];
       } else {
         media = post.media.map((item, index) => ({
-          type: 'photo',
-          media: item,
+          type: item.is_video ? 'video' : 'photo',
+          media: item.is_video ? item.video_url : item.display_url,
           ...(index < 1 && { caption: post.caption }),
         }));
       }

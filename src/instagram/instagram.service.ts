@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { igApi, getCookie } from 'insta-fetcher';
+import { getCookie, igApi } from 'insta-fetcher';
 import { InstagramDBService } from '../services/db/instagram-db.service';
 import { TInstagramPost } from '../types/instagram';
 import { IPaginatedPosts } from 'insta-fetcher/dist/types/PaginatedPosts';
@@ -96,11 +96,11 @@ export class InstagramService {
 
   async savePosts(instagramAccount: string, posts: IPaginatedPosts) {
     try {
-      const updatedPosts = this.proceedPosts(posts);
-      await this.instagramDBService.setPosts(instagramAccount, updatedPosts);
+      const newPosts = this.proceedPosts(posts);
+      await this.instagramDBService.setPosts(instagramAccount, newPosts);
       await this.instagramDBService.setPostsLastFetch(instagramAccount);
 
-      return updatedPosts;
+      return newPosts;
     } catch (error) {
       this.logger.error(error);
     }
@@ -131,23 +131,38 @@ export class InstagramService {
 
   private proceedPosts(paginatedPosts: IPaginatedPosts): TInstagramPost[] {
     return paginatedPosts.edges.map(({ node: post }) => {
+      // error in library, display_resources is exist
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const { display_resources } = post;
       return {
         id: post.id,
         __typename: post.__typename,
+        product_type: post.product_type,
         is_video: post.is_video,
         video_url: post.video_url,
+        dash_info: post.dash_info,
         display_url: post.display_url,
         taken_at_timestamp: post.taken_at_timestamp,
-        product_type: post.product_type,
-        media: post.edge_sidecar_to_children
-          ? post.edge_sidecar_to_children.edges.map(
-              ({ node }) => node.display_url,
-            )
-          : [],
+        dimensions: post.dimensions,
+        display_resources: !post.hasOwnProperty('display_resources')
+          ? []
+          : display_resources,
         ...(post?.edge_media_to_caption?.edges[0]?.node?.text && {
           caption: post.edge_media_to_caption.edges[0].node.text,
         }),
         text: post.edge_media_to_caption.edges[0].node.text || '',
+        media: post.edge_sidecar_to_children
+          ? post.edge_sidecar_to_children.edges.map(({ node }) => ({
+              id: node.id,
+              is_video: node.is_video,
+              video_url: node.video_url,
+              dash_info: node.dash_info,
+              display_url: node.display_url,
+              dimensions: node.dimensions,
+              display_resources: node.display_resources,
+            }))
+          : [],
       };
     });
   }
